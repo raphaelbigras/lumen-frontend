@@ -49,7 +49,6 @@ export default function BilletsPage() {
     ...filters,
   };
   if (search) params.search = search;
-  if (user?.role === 'USER') params.submitterId = user.id;
 
   const { data, isLoading } = useQuery({
     queryKey: ['tickets', params],
