@@ -8,7 +8,6 @@ const NAV_ITEMS = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Tableau de bord', roles: ['ADMIN', 'AGENT', 'USER'] },
   { href: '/billets', icon: Ticket, label: 'Billets', roles: ['ADMIN', 'AGENT', 'USER'] },
   { href: '/categories', icon: FolderOpen, label: 'Catégories', roles: ['ADMIN', 'AGENT'] },
-  { href: '/admin', icon: Users, label: 'Utilisateurs', roles: ['ADMIN'] },
 ];
 
 export function Sidebar() {
@@ -38,9 +37,19 @@ export function Sidebar() {
         );
       })}
       <div className="flex-1" />
-      <button title="Paramètres" className="w-9 h-9 rounded-lg flex items-center justify-center text-lumen-text-tertiary hover:text-lumen-text-secondary transition-colors">
-        <Settings size={18} />
-      </button>
+      {user?.role === 'ADMIN' && (
+        <Link
+          href="/admin"
+          title="Paramètres"
+          className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+            pathname === '/admin'
+              ? 'bg-lumen-border-primary text-purple-400'
+              : 'text-lumen-text-tertiary hover:text-lumen-text-secondary'
+          }`}
+        >
+          <Settings size={18} />
+        </Link>
+      )}
     </aside>
   );
 }

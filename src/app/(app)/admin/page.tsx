@@ -11,7 +11,7 @@ const ROLE_LABELS: Record<string, string> = {
   USER: 'Utilisateur',
 };
 
-const ROLE_STYLES: Record<string, string> = {
+const ROLE_BADGE_STYLES: Record<string, string> = {
   ADMIN: 'bg-purple-500/15 text-purple-400',
   AGENT: 'bg-blue-500/15 text-blue-400',
   USER: 'bg-lumen-bg-tertiary text-lumen-text-secondary',
@@ -38,12 +38,15 @@ export default function AdminPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['users'] }),
   });
 
+  // user.id from AuthContext is the Keycloak sub, match against keycloakId
+  const isSelf = (u: any) => u.keycloakId === user?.id;
+
   return (
     <>
-      <h1 className="text-2xl font-bold text-lumen-text-primary mb-6">Administration</h1>
+      <h1 className="text-2xl font-bold text-lumen-text-primary mb-6">Paramètres</h1>
       <div className="bg-lumen-bg-secondary rounded-lg border border-lumen-border-secondary">
         <div className="p-4 border-b border-lumen-border-secondary">
-          <h2 className="font-semibold text-lumen-text-primary">Utilisateurs</h2>
+          <h2 className="font-semibold text-lumen-text-primary">Gestion des utilisateurs</h2>
         </div>
         {isLoading ? (
           <div className="p-8 text-center text-lumen-text-tertiary">Chargement...</div>
@@ -59,20 +62,27 @@ export default function AdminPage() {
             <tbody className="divide-y divide-lumen-border-secondary">
               {users?.map((u: any) => (
                 <tr key={u.id} className="hover:bg-lumen-hover">
-                  <td className="px-4 py-3 text-sm font-medium text-lumen-text-primary">{u.firstName} {u.lastName}</td>
+                  <td className="px-4 py-3 text-sm font-medium text-lumen-text-primary">
+                    {u.firstName} {u.lastName}
+                    {isSelf(u) && <span className="text-[10px] text-lumen-text-tertiary ml-2">(vous)</span>}
+                  </td>
                   <td className="px-4 py-3 text-sm text-lumen-text-secondary">{u.email}</td>
                   <td className="px-4 py-3">
-                    <select
-                      value={u.role}
-                      onChange={(e) => roleMutation.mutate({ userId: u.id, role: e.target.value })}
-                      disabled={u.id === user?.id}
-                      className={`text-xs px-2 py-1 rounded border-0 outline-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${ROLE_STYLES[u.role] || ROLE_STYLES.USER}`}
-                      title={u.id === user?.id ? 'Vous ne pouvez pas modifier votre propre rôle' : ''}
-                    >
-                      {Object.entries(ROLE_LABELS).map(([value, label]) => (
-                        <option key={value} value={value}>{label}</option>
-                      ))}
-                    </select>
+                    {isSelf(u) ? (
+                      <span className={`text-xs px-2 py-1 rounded ${ROLE_BADGE_STYLES[u.role] || ROLE_BADGE_STYLES.USER}`}>
+                        {ROLE_LABELS[u.role] || u.role}
+                      </span>
+                    ) : (
+                      <select
+                        value={u.role}
+                        onChange={(e) => roleMutation.mutate({ userId: u.id, role: e.target.value })}
+                        className="text-xs bg-lumen-bg-tertiary border border-lumen-border-primary text-lumen-text-primary rounded px-2 py-1 outline-none cursor-pointer focus:border-primary"
+                      >
+                        {Object.entries(ROLE_LABELS).map(([value, label]) => (
+                          <option key={value} value={value}>{label}</option>
+                        ))}
+                      </select>
+                    )}
                   </td>
                 </tr>
               ))}

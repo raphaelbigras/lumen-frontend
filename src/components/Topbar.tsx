@@ -8,7 +8,7 @@ const ROUTE_LABELS: Record<string, string> = {
   '/billets': 'Billets',
   '/billets/nouveau': 'Nouveau billet',
   '/categories': 'Catégories',
-  '/admin': 'Utilisateurs',
+  '/admin': 'Paramètres',
 };
 
 export function Topbar() {
