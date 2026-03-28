@@ -1,13 +1,26 @@
 'use client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../../../lib/api/client';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
+const ROLE_LABELS: Record<string, string> = {
+  ADMIN: 'Administrateur',
+  AGENT: 'Agent',
+  USER: 'Utilisateur',
+};
+
+const ROLE_STYLES: Record<string, string> = {
+  ADMIN: 'bg-purple-500/15 text-purple-400',
+  AGENT: 'bg-blue-500/15 text-blue-400',
+  USER: 'bg-lumen-bg-tertiary text-lumen-text-secondary',
+};
+
 export default function AdminPage() {
   const { user } = useAuth();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (user && user.role !== 'ADMIN') router.replace('/dashboard');
@@ -17,6 +30,12 @@ export default function AdminPage() {
     queryKey: ['users'],
     queryFn: () => apiClient.get('/users').then((r) => r.data),
     enabled: user?.role === 'ADMIN',
+  });
+
+  const roleMutation = useMutation({
+    mutationFn: ({ userId, role }: { userId: string; role: string }) =>
+      apiClient.patch(`/users/${userId}/role`, { role }).then((r) => r.data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['users'] }),
   });
 
   return (
@@ -42,7 +61,19 @@ export default function AdminPage() {
                 <tr key={u.id} className="hover:bg-lumen-hover">
                   <td className="px-4 py-3 text-sm font-medium text-lumen-text-primary">{u.firstName} {u.lastName}</td>
                   <td className="px-4 py-3 text-sm text-lumen-text-secondary">{u.email}</td>
-                  <td className="px-4 py-3"><span className="text-xs bg-lumen-bg-tertiary text-lumen-text-secondary px-2 py-1 rounded">{u.role}</span></td>
+                  <td className="px-4 py-3">
+                    <select
+                      value={u.role}
+                      onChange={(e) => roleMutation.mutate({ userId: u.id, role: e.target.value })}
+                      disabled={u.id === user?.id}
+                      className={`text-xs px-2 py-1 rounded border-0 outline-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${ROLE_STYLES[u.role] || ROLE_STYLES.USER}`}
+                      title={u.id === user?.id ? 'Vous ne pouvez pas modifier votre propre rôle' : ''}
+                    >
+                      {Object.entries(ROLE_LABELS).map(([value, label]) => (
+                        <option key={value} value={value}>{label}</option>
+                      ))}
+                    </select>
+                  </td>
                 </tr>
               ))}
             </tbody>
