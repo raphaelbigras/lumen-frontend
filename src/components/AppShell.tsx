@@ -1,0 +1,28 @@
+'use client';
+import { useAuth } from '../contexts/AuthContext';
+import { Sidebar } from './Sidebar';
+import { Topbar } from './Topbar';
+
+export function AppShell({ children }: { children: React.ReactNode }) {
+  const { initialized } = useAuth();
+
+  if (!initialized) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-lumen-bg-primary">
+        <div className="text-lumen-text-tertiary">Chargement...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-screen bg-lumen-bg-primary">
+      <Sidebar />
+      <div className="flex flex-col flex-1 ml-14">
+        <Topbar />
+        <main className="flex-1 overflow-y-auto p-5 bg-lumen-bg-primary">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}

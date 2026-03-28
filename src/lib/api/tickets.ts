@@ -8,8 +8,17 @@ export interface Ticket {
   priority: string;
   submitter: { id: string; firstName: string; lastName: string; email: string };
   assignments: { agent: { id: string; firstName: string; lastName: string } }[];
+  department?: { id: string; name: string };
+  category?: { id: string; name: string };
   createdAt: string;
   updatedAt: string;
+}
+
+export interface PaginatedTickets {
+  data: Ticket[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
 export interface CreateTicketData {
@@ -17,11 +26,12 @@ export interface CreateTicketData {
   description: string;
   priority?: string;
   departmentId?: string;
+  categoryId?: string;
 }
 
 export const ticketsApi = {
   getAll: (params?: Record<string, string>) =>
-    apiClient.get<Ticket[]>('/tickets', { params }).then((r) => r.data),
+    apiClient.get<PaginatedTickets>('/tickets', { params }).then((r) => r.data),
   getById: (id: string) => apiClient.get<Ticket>(`/tickets/${id}`).then((r) => r.data),
   create: (data: CreateTicketData) => apiClient.post<Ticket>('/tickets', data).then((r) => r.data),
   update: (id: string, data: Partial<Ticket>) =>

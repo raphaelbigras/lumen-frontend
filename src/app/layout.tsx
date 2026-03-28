@@ -3,13 +3,13 @@ import './globals.css';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  title: 'Lumen - IT Ticketing',
-  description: 'Self-hosted IT ticketing system',
+  title: 'Lumen — Billetterie IT',
+  description: 'Système de billetterie IT interne',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <body>
         <Providers>{children}</Providers>
       </body>
