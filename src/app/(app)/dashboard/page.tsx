@@ -80,11 +80,11 @@ export default function DashboardPage() {
       <h1 className="text-lg font-bold mb-5">Tableau de bord</h1>
 
       <div className="grid grid-cols-5 gap-3 mb-5">
-        <KpiCard label="Billets ouverts" value={d.kpis.openCount} trend={`${d.kpis.openTrend > 0 ? '\u2191' : '\u2192'} ${d.kpis.openTrend}%`} trendType={d.kpis.openTrend > 10 ? 'down' : 'neutral'} />
+        <KpiCard label="Billets ouverts" value={d.kpis.openCount} trend={`${d.kpis.openTrend > 0 ? '↑' : '→'} ${d.kpis.openTrend}%`} trendType={d.kpis.openTrend > 10 ? 'down' : 'neutral'} />
         <KpiCard label="En cours" value={d.kpis.inProgressCount} />
-        <KpiCard label="R\u00e9solus (mois)" value={d.kpis.resolvedMonthCount} trend={`${d.kpis.resolvedMonthTrend > 0 ? '\u2191' : '\u2193'} ${Math.abs(d.kpis.resolvedMonthTrend)}%`} trendType={d.kpis.resolvedMonthTrend >= 0 ? 'up' : 'down'} />
-        <KpiCard label="Temps m\u00e9dian r\u00e9solution" value={`${d.kpis.medianResolutionHours}h`} trend={`${d.kpis.medianResolutionTrend > 0 ? '\u2191' : '\u2193'} ${Math.abs(d.kpis.medianResolutionTrend)}h`} trendType={d.kpis.medianResolutionTrend <= 0 ? 'up' : 'down'} />
-        <KpiCard label="Non assign\u00e9s" value={d.kpis.unassignedCount} trendType={d.kpis.unassignedCount > 0 ? 'warning' : 'neutral'} trend={d.kpis.unassignedCount > 0 ? '\u26a0 n\u00e9cessite attention' : '\u2713'} />
+        <KpiCard label="Résolus (mois)" value={d.kpis.resolvedMonthCount} trend={`${d.kpis.resolvedMonthTrend > 0 ? '↑' : '↓'} ${Math.abs(d.kpis.resolvedMonthTrend)}%`} trendType={d.kpis.resolvedMonthTrend >= 0 ? 'up' : 'down'} />
+        <KpiCard label="Temps médian résolution" value={`${d.kpis.medianResolutionHours}h`} trend={`${d.kpis.medianResolutionTrend > 0 ? '↑' : '↓'} ${Math.abs(d.kpis.medianResolutionTrend)}h`} trendType={d.kpis.medianResolutionTrend <= 0 ? 'up' : 'down'} />
+        <KpiCard label="Non assignés" value={d.kpis.unassignedCount} trendType={d.kpis.unassignedCount > 0 ? 'warning' : 'neutral'} trend={d.kpis.unassignedCount > 0 ? '⚠ nécessite attention' : '✓'} />
       </div>
 
       <div className="grid grid-cols-3 gap-3 mb-5">
