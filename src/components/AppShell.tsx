@@ -17,7 +17,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen bg-lumen-bg-primary">
       <Sidebar />
-      <div className="flex flex-col flex-1 ml-14">
+      <div className="flex flex-col flex-1 ml-[220px]">
         <Topbar />
         <main className="flex-1 overflow-y-auto p-5 bg-lumen-bg-primary">
           {children}

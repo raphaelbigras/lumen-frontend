@@ -28,7 +28,13 @@ export interface UserDashboardData {
   myOpenCount: number;
   myInProgressCount: number;
   myResolvedCount: number;
+  myPendingCount: number;
+  myClosedCount: number;
+  myTotalCount: number;
+  medianResolutionHours: number;
   myTickets: any[];
+  volumeByWeek: { week: string; count: number }[];
+  byCategory: { category: string; count: number; percentage: number }[];
 }
 
 export const analyticsApi = {

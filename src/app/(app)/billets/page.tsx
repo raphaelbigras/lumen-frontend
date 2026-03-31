@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useAuth } from '../../../contexts/AuthContext';
 import { ticketsApi } from '../../../lib/api/tickets';
 import { categoriesApi } from '../../../lib/api/categories';
@@ -53,11 +53,13 @@ export default function BilletsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['tickets', params],
     queryFn: () => ticketsApi.getAll(params),
+    placeholderData: keepPreviousData,
   });
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: categoriesApi.getAll,
+    staleTime: 5 * 60_000,
   });
 
   const handleFilterChange = (key: string, value: string) => {

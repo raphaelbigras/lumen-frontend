@@ -1,13 +1,14 @@
 'use client';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../../contexts/AuthContext';
-import { analyticsApi, DashboardData } from '../../../lib/api/analytics';
+import { analyticsApi, DashboardData, UserDashboardData } from '../../../lib/api/analytics';
 import { KpiCard } from '../../../components/DashboardCharts/KpiCard';
 import { VolumeChart } from '../../../components/DashboardCharts/VolumeChart';
 import { CategoryDonut } from '../../../components/DashboardCharts/CategoryDonut';
 import { AgentPerformanceTable } from '../../../components/DashboardCharts/AgentPerformanceTable';
 import { AttentionList } from '../../../components/DashboardCharts/AttentionList';
 import { TicketStatusBadge } from '../../../components/TicketStatusBadge';
+import { PRIORITY_LABELS, PRIORITY_COLORS } from '../../../lib/translations';
 import Link from 'next/link';
 
 export default function DashboardPage() {
@@ -22,7 +23,7 @@ export default function DashboardPage() {
 
   // User dashboard
   if (user?.role === 'USER') {
-    const d = data as any;
+    const d = data as UserDashboardData;
     return (
       <div>
         <div className="flex items-center justify-between mb-5">
@@ -31,17 +32,40 @@ export default function DashboardPage() {
             + Nouveau billet
           </Link>
         </div>
-        <div className="grid grid-cols-3 gap-3 mb-5">
-          <KpiCard label="Mes billets ouverts" value={d.myOpenCount} />
+
+        <div className="grid grid-cols-5 gap-3 mb-5">
+          <KpiCard label="Total" value={d.myTotalCount} />
+          <KpiCard label="Ouverts" value={d.myOpenCount} trendType={d.myOpenCount > 0 ? 'warning' : 'neutral'} />
           <KpiCard label="En cours" value={d.myInProgressCount} />
-          <KpiCard label="Résolus" value={d.myResolvedCount} />
+          <KpiCard label="En attente" value={d.myPendingCount} />
+          <KpiCard label="Résolus / Fermés" value={d.myResolvedCount + d.myClosedCount} trend={d.medianResolutionHours > 0 ? `~${d.medianResolutionHours}h médiane` : undefined} trendType="up" />
         </div>
+
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          <div className="col-span-2">
+            <VolumeChart data={d.volumeByWeek || []} />
+          </div>
+          <CategoryDonut data={d.byCategory || []} />
+        </div>
+
         <div className="bg-lumen-bg-tertiary border border-lumen-border-primary rounded-xl p-4">
-          <h3 className="text-sm font-semibold mb-3">Mes billets</h3>
+          <h3 className="text-sm font-semibold mb-3">Mes billets récents</h3>
+          {d.myTickets?.length === 0 && (
+            <p className="text-xs text-lumen-text-tertiary py-4 text-center">Aucun billet pour le moment</p>
+          )}
           {d.myTickets?.map((t: any) => (
-            <Link key={t.id} href={`/billets/${t.id}`} className="flex items-center justify-between py-2 border-b border-lumen-border-secondary last:border-b-0 hover:bg-lumen-hover rounded px-1">
-              <div className="text-xs">{t.title}</div>
-              <TicketStatusBadge status={t.status} />
+            <Link key={t.id} href={`/billets/${t.id}`} className="flex items-center justify-between py-2.5 border-b border-lumen-border-secondary last:border-b-0 hover:bg-lumen-hover rounded px-2 transition-colors">
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <span className={`inline-block w-2 h-2 rounded-full shrink-0 ${PRIORITY_COLORS[t.priority] || 'bg-lumen-text-tertiary'}`} />
+                <span className="text-xs text-lumen-text-primary truncate">{t.title}</span>
+                {t.category && (
+                  <span className="text-[10px] text-lumen-text-tertiary bg-lumen-bg-secondary border border-lumen-border-primary rounded-full px-2 py-0.5 shrink-0">{t.category.name}</span>
+                )}
+              </div>
+              <div className="flex items-center gap-3 shrink-0 ml-3">
+                <span className="text-[10px] text-lumen-text-tertiary">{new Date(t.updatedAt).toLocaleDateString('fr-FR')}</span>
+                <TicketStatusBadge status={t.status} />
+              </div>
             </Link>
           ))}
         </div>
