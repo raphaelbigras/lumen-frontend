@@ -69,7 +69,7 @@ const COLUMN_DEFS: Record<string, { label: string; render: (t: Ticket) => React.
   updated: { label: 'Modifié le', render: (t) => <span className="text-lumen-text-tertiary">{new Date(t.updatedAt).toLocaleDateString('fr-FR')}</span> },
 };
 
-const SORT_MAP: Record<string, string> = { title: 'title', status: 'status', priority: 'priority', created: 'createdAt', updated: 'updatedAt' };
+const SORT_MAP: Record<string, string> = { title: 'title', status: 'status', priority: 'priority', category: 'category', submitter: 'submitter', assignee: 'assignee', department: 'department', created: 'createdAt', updated: 'updatedAt' };
 
 function SortableHeader({
   id,
@@ -98,13 +98,13 @@ function SortableHeader({
     minWidth: `${width}px`,
     maxWidth: `${width}px`,
   };
-  const isSorted = sortBy === (SORT_MAP[id] || id);
+  const isSorted = sortBy === SORT_MAP[id];
 
   return (
     <th
       ref={setNodeRef}
       style={style}
-      className={`relative px-3 py-2 text-left text-[11px] text-lumen-text-tertiary font-medium uppercase tracking-wider select-none whitespace-nowrap ${
+      className={`relative px-3 py-3 text-left text-[13px] text-lumen-text-primary font-bold uppercase tracking-wide select-none whitespace-nowrap border-b-2 border-lumen-border-primary ${
         !isLast ? 'border-r border-lumen-border-secondary/50' : ''
       }`}
     >

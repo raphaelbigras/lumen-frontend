@@ -8,6 +8,7 @@ import { TicketTable } from '../../../components/TicketTable/TicketTable';
 import { FilterBar } from '../../../components/TicketTable/FilterBar';
 import { ColumnVisibilityPopover } from '../../../components/TicketTable/ColumnVisibilityPopover';
 import Link from 'next/link';
+import { RefreshCw } from 'lucide-react';
 
 const DEFAULT_COLUMNS = ['title', 'status', 'priority', 'category', 'submitter', 'assignee', 'department', 'created', 'updated'];
 
@@ -74,8 +75,9 @@ export default function BilletsPage() {
   };
 
   const handleSort = (column: string) => {
-    const sortMap: Record<string, string> = { title: 'title', status: 'status', priority: 'priority', created: 'createdAt', updated: 'updatedAt' };
-    const field = sortMap[column] || column;
+    const sortMap: Record<string, string> = { title: 'title', status: 'status', priority: 'priority', category: 'category', submitter: 'submitter', assignee: 'assignee', department: 'department', created: 'createdAt', updated: 'updatedAt' };
+    const field = sortMap[column];
+    if (!field) return;
     if (sortBy === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
@@ -114,6 +116,12 @@ export default function BilletsPage() {
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             className="bg-lumen-bg-tertiary border border-lumen-border-primary rounded-lg px-3 py-1.5 text-xs text-lumen-text-secondary placeholder:text-lumen-text-tertiary outline-none w-48"
           />
+          <button
+            onClick={() => window.location.reload()}
+            className="flex items-center gap-1.5 bg-lumen-bg-tertiary border border-lumen-border-primary rounded-lg px-3 py-1.5 text-xs text-lumen-text-secondary hover:text-lumen-text-primary"
+          >
+            <RefreshCw size={14} />
+          </button>
           <ColumnVisibilityPopover columns={allColumns} visibleColumns={visibleColumns} onToggle={toggleColumn} />
           <Link href="/billets/nouveau" className="bg-gradient-to-r from-primary to-accent text-white px-4 py-1.5 rounded-lg text-xs font-semibold">
             + Nouveau billet

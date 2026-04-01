@@ -10,6 +10,7 @@ import { AttentionList } from '../../../components/DashboardCharts/AttentionList
 import { TicketStatusBadge } from '../../../components/TicketStatusBadge';
 import { PRIORITY_LABELS, PRIORITY_COLORS } from '../../../lib/translations';
 import Link from 'next/link';
+import { RefreshCw } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -17,6 +18,8 @@ export default function DashboardPage() {
     queryKey: ['analytics', 'dashboard'],
     queryFn: analyticsApi.getDashboard,
   });
+
+  const handleRefresh = () => window.location.reload();
 
   if (isLoading) return <div className="text-lumen-text-tertiary">Chargement...</div>;
   if (!data) return null;
@@ -28,9 +31,17 @@ export default function DashboardPage() {
       <div>
         <div className="flex items-center justify-between mb-5">
           <h1 className="text-lg font-bold">Tableau de bord</h1>
-          <Link href="/billets/nouveau" className="bg-gradient-to-r from-primary to-accent text-white px-4 py-2 rounded-lg text-xs font-semibold">
-            + Nouveau billet
-          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRefresh}
+              className="flex items-center gap-1.5 bg-lumen-bg-tertiary border border-lumen-border-primary rounded-lg px-3 py-1.5 text-xs text-lumen-text-secondary hover:text-lumen-text-primary"
+            >
+              <RefreshCw size={14} />
+            </button>
+            <Link href="/billets/nouveau" className="bg-gradient-to-r from-primary to-accent text-white px-4 py-2 rounded-lg text-xs font-semibold">
+              + Nouveau billet
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-5 gap-3 mb-5">
@@ -77,7 +88,15 @@ export default function DashboardPage() {
   const d = data as DashboardData;
   return (
     <div>
-      <h1 className="text-lg font-bold mb-5">Tableau de bord</h1>
+      <div className="flex items-center justify-between mb-5">
+        <h1 className="text-lg font-bold">Tableau de bord</h1>
+        <button
+          onClick={handleRefresh}
+          className="flex items-center gap-1.5 bg-lumen-bg-tertiary border border-lumen-border-primary rounded-lg px-3 py-1.5 text-xs text-lumen-text-secondary hover:text-lumen-text-primary"
+        >
+          <RefreshCw size={14} />
+        </button>
+      </div>
 
       <div className="grid grid-cols-5 gap-3 mb-5">
         <KpiCard label="Billets ouverts" value={d.kpis.openCount} trend={`${d.kpis.openTrend > 0 ? '↑' : '→'} ${d.kpis.openTrend}%`} trendType={d.kpis.openTrend > 10 ? 'down' : 'neutral'} />

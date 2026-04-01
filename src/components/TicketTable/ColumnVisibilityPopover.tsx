@@ -39,7 +39,7 @@ export function ColumnVisibilityPopover({ columns, visibleColumns, onToggle }: C
                 onChange={() => onToggle(col.id)}
                 className="rounded border-lumen-border-primary"
               />
-              {col.label}
+              <span className="uppercase">{col.label}</span>
             </label>
           ))}
         </div>
