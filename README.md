@@ -53,28 +53,42 @@ npm run lint      # ESLint
 
 ```
 src/
-├── app/                        # Next.js App Router pages
-│   ├── layout.tsx              # Root layout (metadata, providers)
-│   ├── page.tsx                # / → redirects to /dashboard
-│   ├── providers.tsx           # QueryClientProvider + AuthProvider
-│   ├── globals.css             # Tailwind imports, CSS variables
-│   ├── dashboard/page.tsx      # Ticket stats + recent tickets table
-│   ├── tickets/
-│   │   ├── page.tsx            # Ticket list with search/filter
-│   │   ├── new/page.tsx        # Create ticket form
-│   │   └── [id]/page.tsx       # Ticket detail, comments, status
-│   └── admin/page.tsx          # User management (ADMIN only)
+├── app/                              # Next.js App Router pages
+│   ├── layout.tsx                    # Root layout (metadata, providers)
+│   ├── page.tsx                      # / → redirects to /dashboard
+│   ├── providers.tsx                 # QueryClientProvider + AuthProvider
+│   ├── globals.css                   # Tailwind imports, CSS variables
+│   └── (app)/                        # Authenticated layout group
+│       ├── dashboard/page.tsx        # Admin analytics dashboard (lazy-loaded charts)
+│       ├── billets/
+│       │   ├── page.tsx              # Ticket list, status filters, CSV export
+│       │   ├── nouveau/page.tsx      # Create ticket (all fields required)
+│       │   └── [id]/page.tsx         # Ticket detail, comments, attachments, reopen
+│       ├── categories/page.tsx       # Champs personnalisés (categories + departments tabs)
+│       ├── admin/page.tsx            # User management, role assignment (ADMIN only)
+│       └── layout.tsx                # App shell (Sidebar + Topbar)
 ├── components/
-│   ├── Navbar.tsx              # Top navigation bar
-│   └── TicketStatusBadge.tsx   # Colored status pill
+│   ├── Sidebar.tsx                   # Main navigation sidebar
+│   ├── Topbar.tsx                    # Top bar with company name
+│   ├── CustomSelect.tsx              # Styled dropdown (replaces native <select>)
+│   ├── TicketStatusBadge.tsx         # Colored status pill
+│   ├── TicketHistoryPanel.tsx        # Audit log panel (lazy-loaded)
+│   └── TicketTable/
+│       ├── TicketTable.tsx           # Sortable, configurable ticket table
+│       ├── ColumnVisibilityPopover.tsx # Column show/hide control
+│       └── FilterBar.tsx             # (legacy, replaced by status toggles)
 ├── contexts/
-│   └── AuthContext.tsx         # Auth state, user object, role extraction
+│   └── AuthContext.tsx               # Auth state, user object, role extraction
 └── lib/
-    ├── keycloak.ts             # Keycloak singleton
+    ├── keycloak.ts                   # Keycloak singleton
+    ├── translations.ts               # French labels for status/priority
     └── api/
-        ├── client.ts           # Axios instance with JWT interceptor
-        ├── tickets.ts          # Ticket API functions & types
-        └── comments.ts         # Comment API functions & types
+        ├── client.ts                 # Axios instance with JWT interceptor
+        ├── tickets.ts                # Ticket API functions & types
+        ├── comments.ts               # Comment API functions & types
+        ├── categories.ts             # Category API functions & types
+        ├── departments.ts            # Department API functions & types
+        └── attachments.ts            # Attachment upload/download
 ```
 
 ## Authentication Flow
@@ -89,9 +103,9 @@ src/
 
 | Role | Access |
 |---|---|
-| `USER` | Submit tickets, add comments, view own tickets |
-| `AGENT` | All USER access + change ticket status |
-| `ADMIN` | All AGENT access + access `/admin` (user management) |
+| `USER` | Submit tickets, add comments/attachments, view own tickets, reopen closed tickets |
+| `AGENT` | All USER access + change ticket status, manage categories & departments |
+| `ADMIN` | All AGENT access + `/admin` (user management, role assignment), analytics dashboard |
 
 Role checks are enforced on the backend. The frontend uses the role for conditional UI (hiding/showing the status dropdown, admin nav link, etc.).
 
