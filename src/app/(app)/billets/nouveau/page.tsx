@@ -4,10 +4,14 @@ import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ticketsApi } from '../../../../lib/api/tickets';
 import { categoriesApi } from '../../../../lib/api/categories';
+import { departmentsApi } from '../../../../lib/api/departments';
 import { attachmentsApi } from '../../../../lib/api/attachments';
 import { PRIORITY_LABELS } from '../../../../lib/translations';
 import { Paperclip, X, Upload, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { CustomSelect } from '../../../../components/CustomSelect';
+
+const SITES = ['Valleyfield', 'Beauharnois', 'Montréal', 'Brossard', 'Bromont', 'Hemmingford'];
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -23,6 +27,8 @@ export default function NouveauBilletPage() {
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState('MEDIUM');
   const [categoryId, setCategoryId] = useState('');
+  const [departmentId, setDepartmentId] = useState('');
+  const [site, setSite] = useState('');
   const [error, setError] = useState('');
   const [files, setFiles] = useState<File[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -32,6 +38,12 @@ export default function NouveauBilletPage() {
   const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: categoriesApi.getAll,
+    staleTime: 5 * 60_000,
+  });
+
+  const { data: departments } = useQuery({
+    queryKey: ['departments'],
+    queryFn: departmentsApi.getAll,
     staleTime: 5 * 60_000,
   });
 
@@ -69,7 +81,7 @@ export default function NouveauBilletPage() {
   }, []);
 
   const mutation = useMutation({
-    mutationFn: async (data: { title: string; description: string; priority: string; categoryId?: string }) => {
+    mutationFn: async (data: { title: string; description: string; priority: string; categoryId: string; departmentId: string; site: string }) => {
       const ticket = await ticketsApi.create(data);
 
       if (files.length > 0) {
@@ -92,19 +104,25 @@ export default function NouveauBilletPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (!categoryId || !departmentId || !site) {
+      setError('Tous les champs sont obligatoires.');
+      return;
+    }
     mutation.mutate({
       title: title.trim(),
       description: description.trim(),
       priority,
-      categoryId: categoryId || undefined,
+      categoryId,
+      departmentId,
+      site,
     });
   };
 
   return (
     <div className="max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-5">
-        <Link href="/billets" className="flex items-center gap-2 text-xs text-lumen-text-tertiary hover:text-lumen-text-secondary transition-colors">
-          <span className="w-7 h-7 rounded-lg bg-lumen-bg-tertiary border border-lumen-border-primary flex items-center justify-center hover:border-lumen-text-tertiary transition-colors">
+        <Link href="/billets" className="flex items-center gap-2 text-xs text-lumen-text-secondary font-medium hover:text-primary transition-colors">
+          <span className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary hover:bg-primary/20 hover:border-primary/40 transition-all">
             <ArrowLeft size={14} />
           </span>
           Retour aux billets
@@ -145,28 +163,39 @@ export default function NouveauBilletPage() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-xs text-lumen-text-tertiary mb-1.5">Priorité</label>
-            <select
+            <CustomSelect
               value={priority}
-              onChange={(e) => setPriority(e.target.value)}
-              className="w-full bg-lumen-bg-secondary border border-lumen-border-primary rounded-lg px-3 py-2 text-sm text-lumen-text-primary outline-none focus:border-primary"
-            >
-              {Object.entries(PRIORITY_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>{label}</option>
-              ))}
-            </select>
+              onChange={setPriority}
+              options={Object.entries(PRIORITY_LABELS).map(([value, label]) => ({ value, label }))}
+              placeholder=""
+            />
           </div>
           <div>
             <label className="block text-xs text-lumen-text-tertiary mb-1.5">Catégorie</label>
-            <select
+            <CustomSelect
               value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full bg-lumen-bg-secondary border border-lumen-border-primary rounded-lg px-3 py-2 text-sm text-lumen-text-primary outline-none focus:border-primary"
-            >
-              <option value="">— Sélectionner —</option>
-              {categories?.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
+              onChange={setCategoryId}
+              options={categories?.map((c) => ({ value: c.id, label: c.name })) || []}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs text-lumen-text-tertiary mb-1.5">Département <span className="text-red-400">*</span></label>
+            <CustomSelect
+              value={departmentId}
+              onChange={setDepartmentId}
+              options={departments?.map((d) => ({ value: d.id, label: d.name })) || []}
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-lumen-text-tertiary mb-1.5">Site (usine ou bureau) <span className="text-red-400">*</span></label>
+            <CustomSelect
+              value={site}
+              onChange={setSite}
+              options={SITES.map((s) => ({ value: s, label: s }))}
+            />
           </div>
         </div>
 

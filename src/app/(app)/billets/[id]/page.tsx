@@ -7,8 +7,12 @@ import { attachmentsApi } from '../../../../lib/api/attachments';
 import { TicketStatusBadge } from '../../../../components/TicketStatusBadge';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { STATUS_LABELS, PRIORITY_LABELS, PRIORITY_COLORS } from '../../../../lib/translations';
-import { Paperclip, Download, Trash2, Upload, FileText, Image, File, CheckCircle2, X, History } from 'lucide-react';
-import { TicketHistoryPanel } from '../../../../components/TicketHistoryPanel';
+import { Paperclip, Download, Trash2, Upload, FileText, Image, File, CheckCircle2, X, History, ArrowLeft, RotateCcw } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { CustomSelect } from '../../../../components/CustomSelect';
+import Link from 'next/link';
+
+const TicketHistoryPanel = dynamic(() => import('../../../../components/TicketHistoryPanel').then(m => ({ default: m.TicketHistoryPanel })), { ssr: false });
 
 const STATUSES = ['OPEN', 'IN_PROGRESS', 'PENDING', 'RESOLVED', 'CLOSED'];
 
@@ -21,6 +25,8 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
   const [showCloseModal, setShowCloseModal] = useState(false);
   const [closeReason, setCloseReason] = useState('');
   const [showHistory, setShowHistory] = useState(false);
+  const [showReopenModal, setShowReopenModal] = useState(false);
+  const [reopenReason, setReopenReason] = useState('');
 
   const { data: ticket, isLoading } = useQuery({
     queryKey: ['ticket', params.id],
@@ -29,7 +35,10 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
 
   const updateMutation = useMutation({
     mutationFn: (data: any) => ticketsApi.update(params.id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['ticket', params.id] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ticket', params.id] });
+      queryClient.invalidateQueries({ queryKey: ['ticket-events', params.id] });
+    },
   });
 
   const commentMutation = useMutation({
@@ -37,12 +46,16 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
     onSuccess: () => {
       setCommentBody('');
       queryClient.invalidateQueries({ queryKey: ['ticket', params.id] });
+      queryClient.invalidateQueries({ queryKey: ['ticket-events', params.id] });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (attachmentId: string) => attachmentsApi.delete(params.id, attachmentId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['ticket', params.id] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ticket', params.id] });
+      queryClient.invalidateQueries({ queryKey: ['ticket-events', params.id] });
+    },
   });
 
   const closeMutation = useMutation({
@@ -54,6 +67,20 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
       setShowCloseModal(false);
       setCloseReason('');
       queryClient.invalidateQueries({ queryKey: ['ticket', params.id] });
+      queryClient.invalidateQueries({ queryKey: ['ticket-events', params.id] });
+    },
+  });
+
+  const reopenMutation = useMutation({
+    mutationFn: async (reason: string) => {
+      await commentsApi.create(params.id, `Billet réouvert par le demandeur : ${reason}`);
+      return ticketsApi.update(params.id, { status: 'OPEN' } as any);
+    },
+    onSuccess: () => {
+      setShowReopenModal(false);
+      setReopenReason('');
+      queryClient.invalidateQueries({ queryKey: ['ticket', params.id] });
+      queryClient.invalidateQueries({ queryKey: ['ticket-events', params.id] });
     },
   });
 
@@ -65,6 +92,7 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
         await attachmentsApi.upload(params.id, file);
       }
       queryClient.invalidateQueries({ queryKey: ['ticket', params.id] });
+      queryClient.invalidateQueries({ queryKey: ['ticket-events', params.id] });
     } finally {
       setUploading(false);
     }
@@ -81,6 +109,7 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
   const canManage = user?.role === 'ADMIN' || user?.role === 'AGENT';
   const isSubmitter = user?.id === (ticket.submitter as any).keycloakId;
   const canClose = isSubmitter && !['CLOSED', 'RESOLVED'].includes(ticket.status);
+  const canReopen = isSubmitter && ['CLOSED', 'RESOLVED'].includes(ticket.status);
   const attachments = (ticket as any).attachments?.filter((a: any) => !a.deletedAt) || [];
 
   const getFileIcon = (mimeType: string) => {
@@ -97,6 +126,12 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
 
   return (
     <div className="max-w-5xl mx-auto">
+      <Link href="/billets" className="inline-flex items-center gap-2 text-xs text-lumen-text-secondary font-medium hover:text-primary transition-colors mb-4">
+        <span className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary hover:bg-primary/20 hover:border-primary/40 transition-all">
+          <ArrowLeft size={14} />
+        </span>
+        Retour aux billets
+      </Link>
       <div className="grid grid-cols-3 gap-5">
         <div className="col-span-2 space-y-5">
           <div className="bg-lumen-bg-tertiary border border-lumen-border-primary rounded-xl p-5">
@@ -254,20 +289,19 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
             </dl>
           </div>
 
-          {(canManage || canClose) && (
+          {(canManage || canClose || canReopen) && (
             <div className="bg-lumen-bg-tertiary border border-lumen-border-primary rounded-xl p-4">
               <h3 className="text-[11px] font-semibold text-lumen-text-tertiary uppercase tracking-wider mb-3">Actions</h3>
               <div className="space-y-3">
                 {canManage && (
                   <div>
                     <label className="block text-xs text-lumen-text-tertiary mb-1">Changer le statut</label>
-                    <select
+                    <CustomSelect
                       value={ticket.status}
-                      onChange={(e) => updateMutation.mutate({ status: e.target.value })}
-                      className="w-full bg-lumen-bg-secondary border border-lumen-border-primary rounded-lg px-3 py-2 text-sm text-lumen-text-primary outline-none focus:border-primary"
-                    >
-                      {STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABELS[s] || s}</option>)}
-                    </select>
+                      onChange={(val) => updateMutation.mutate({ status: val })}
+                      options={STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s] || s }))}
+                      placeholder=""
+                    />
                   </div>
                 )}
                 {canClose && (
@@ -277,6 +311,15 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
                   >
                     <CheckCircle2 size={14} />
                     J&apos;ai trouvé une solution
+                  </button>
+                )}
+                {canReopen && (
+                  <button
+                    onClick={() => setShowReopenModal(true)}
+                    className="w-full flex items-center justify-center gap-2 bg-status-open-bg text-status-open-text border border-status-open-text/20 px-3 py-2 rounded-lg text-xs font-semibold hover:brightness-110 transition-all"
+                  >
+                    <RotateCcw size={14} />
+                    Réouvrir le billet
                   </button>
                 )}
               </div>
@@ -326,6 +369,44 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
         {showHistory && (
           <TicketHistoryPanel ticketId={params.id} onClose={() => setShowHistory(false)} />
         )}
+
+      {/* Reopen ticket modal */}
+      {showReopenModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowReopenModal(false)}>
+          <div className="bg-lumen-bg-tertiary border border-lumen-border-primary rounded-xl p-5 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-lumen-text-primary">Réouvrir le billet</h3>
+              <button onClick={() => setShowReopenModal(false)} className="text-lumen-text-tertiary hover:text-lumen-text-secondary">
+                <X size={16} />
+              </button>
+            </div>
+            <p className="text-xs text-lumen-text-secondary mb-3">Décrivez pourquoi vous souhaitez réouvrir ce billet.</p>
+            <textarea
+              rows={3}
+              autoFocus
+              value={reopenReason}
+              onChange={(e) => setReopenReason(e.target.value)}
+              placeholder="Ex: Le problème persiste, nouvelle erreur apparue..."
+              className="w-full bg-lumen-bg-secondary border border-lumen-border-primary rounded-lg px-3 py-2 text-sm text-lumen-text-primary placeholder:text-lumen-text-tertiary outline-none focus:border-primary resize-none"
+            />
+            <div className="flex items-center justify-end gap-2 mt-4">
+              <button
+                onClick={() => setShowReopenModal(false)}
+                className="px-4 py-2 text-xs text-lumen-text-tertiary hover:text-lumen-text-secondary"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => reopenReason.trim() && reopenMutation.mutate(reopenReason.trim())}
+                disabled={reopenMutation.isPending || !reopenReason.trim()}
+                className="bg-gradient-to-r from-primary to-accent text-white px-4 py-2 rounded-lg text-xs font-semibold disabled:opacity-50"
+              >
+                {reopenMutation.isPending ? 'Réouverture...' : 'Réouvrir le billet'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

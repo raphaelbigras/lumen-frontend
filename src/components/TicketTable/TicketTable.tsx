@@ -65,11 +65,12 @@ const COLUMN_DEFS: Record<string, { label: string; render: (t: Ticket) => React.
     },
   },
   department: { label: 'Département', render: (t) => <span className="text-lumen-text-secondary">{t.department?.name || '—'}</span> },
+  site: { label: 'Site', render: (t) => <span className="text-lumen-text-secondary">{t.site || '—'}</span> },
   created: { label: 'Créé le', render: (t) => <span className="text-lumen-text-tertiary">{new Date(t.createdAt).toLocaleDateString('fr-FR')}</span> },
   updated: { label: 'Modifié le', render: (t) => <span className="text-lumen-text-tertiary">{new Date(t.updatedAt).toLocaleDateString('fr-FR')}</span> },
 };
 
-const SORT_MAP: Record<string, string> = { title: 'title', status: 'status', priority: 'priority', category: 'category', submitter: 'submitter', assignee: 'assignee', department: 'department', created: 'createdAt', updated: 'updatedAt' };
+const SORT_MAP: Record<string, string> = { title: 'title', status: 'status', priority: 'priority', category: 'category', submitter: 'submitter', assignee: 'assignee', department: 'department', site: 'site', created: 'createdAt', updated: 'updatedAt' };
 
 function SortableHeader({
   id,

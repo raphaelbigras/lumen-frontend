@@ -4,6 +4,7 @@ import apiClient from '../../../lib/api/client';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { CustomSelect } from '../../../components/CustomSelect';
 
 const ROLE_LABELS: Record<string, string> = {
   ADMIN: 'Administrateur',
@@ -73,15 +74,12 @@ export default function AdminPage() {
                         {ROLE_LABELS[u.role] || u.role}
                       </span>
                     ) : (
-                      <select
+                      <CustomSelect
                         value={u.role}
-                        onChange={(e) => roleMutation.mutate({ userId: u.id, role: e.target.value })}
-                        className="text-xs bg-lumen-bg-tertiary border border-lumen-border-primary text-lumen-text-primary rounded px-2 py-1 outline-none cursor-pointer focus:border-primary"
-                      >
-                        {Object.entries(ROLE_LABELS).map(([value, label]) => (
-                          <option key={value} value={value}>{label}</option>
-                        ))}
-                      </select>
+                        onChange={(val) => roleMutation.mutate({ userId: u.id, role: val })}
+                        options={Object.entries(ROLE_LABELS).map(([value, label]) => ({ value, label }))}
+                        placeholder=""
+                      />
                     )}
                   </td>
                 </tr>

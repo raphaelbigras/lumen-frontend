@@ -3,14 +3,16 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../../contexts/AuthContext';
 import { analyticsApi, DashboardData, UserDashboardData } from '../../../lib/api/analytics';
 import { KpiCard } from '../../../components/DashboardCharts/KpiCard';
-import { VolumeChart } from '../../../components/DashboardCharts/VolumeChart';
-import { CategoryDonut } from '../../../components/DashboardCharts/CategoryDonut';
 import { AgentPerformanceTable } from '../../../components/DashboardCharts/AgentPerformanceTable';
 import { AttentionList } from '../../../components/DashboardCharts/AttentionList';
 import { TicketStatusBadge } from '../../../components/TicketStatusBadge';
 import { PRIORITY_LABELS, PRIORITY_COLORS } from '../../../lib/translations';
 import Link from 'next/link';
 import { RefreshCw } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const VolumeChart = dynamic(() => import('../../../components/DashboardCharts/VolumeChart').then(m => ({ default: m.VolumeChart })), { ssr: false });
+const CategoryDonut = dynamic(() => import('../../../components/DashboardCharts/CategoryDonut').then(m => ({ default: m.CategoryDonut })), { ssr: false });
 
 export default function DashboardPage() {
   const { user } = useAuth();

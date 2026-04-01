@@ -2,12 +2,12 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
-import { LayoutDashboard, Ticket, FolderOpen, Settings } from 'lucide-react';
+import { LayoutDashboard, Ticket, SlidersHorizontal, Settings } from 'lucide-react';
 
 const NAV_ITEMS = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Tableau de bord', roles: ['ADMIN', 'AGENT', 'USER'], color: 'from-blue-500/20 to-blue-600/10 text-blue-400', activeGlow: 'shadow-blue-500/10' },
   { href: '/billets', icon: Ticket, label: 'Billets', roles: ['ADMIN', 'AGENT', 'USER'], color: 'from-violet-500/20 to-purple-600/10 text-violet-400', activeGlow: 'shadow-violet-500/10' },
-  { href: '/categories', icon: FolderOpen, label: 'Catégories', roles: ['ADMIN', 'AGENT'], color: 'from-amber-500/20 to-orange-600/10 text-amber-400', activeGlow: 'shadow-amber-500/10' },
+  { href: '/categories', icon: SlidersHorizontal, label: 'Champs personnalisés', roles: ['ADMIN', 'AGENT'], color: 'from-amber-500/20 to-orange-600/10 text-amber-400', activeGlow: 'shadow-amber-500/10' },
 ];
 
 const ADMIN_ITEM = { href: '/admin', icon: Settings, label: 'Paramètres', color: 'from-slate-400/20 to-slate-500/10 text-slate-400', activeGlow: 'shadow-slate-400/10' };

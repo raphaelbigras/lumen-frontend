@@ -7,7 +7,7 @@ const ROUTE_LABELS: Record<string, string> = {
   '/dashboard': 'Tableau de bord',
   '/billets': 'Billets',
   '/billets/nouveau': 'Nouveau billet',
-  '/categories': 'Catégories',
+  '/categories': 'Champs personnalisés',
   '/admin': 'Paramètres',
 };
 
@@ -19,9 +19,7 @@ export function Topbar() {
 
   return (
     <header className="h-12 border-b border-lumen-border-secondary bg-lumen-bg-secondary flex items-center justify-between px-5">
-      <div className="text-xs text-lumen-text-tertiary">
-        Accueil / <span className="text-lumen-text-primary">{pageLabel}</span>
-      </div>
+      <div className="text-xs font-medium text-lumen-text-secondary">Groupe Meloche Inc.</div>
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2 bg-lumen-border-secondary border border-lumen-border-primary rounded-md px-3 py-1.5">
           <Search size={14} className="text-lumen-text-tertiary" />

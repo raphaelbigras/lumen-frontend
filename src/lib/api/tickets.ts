@@ -10,6 +10,7 @@ export interface Ticket {
   assignments: { agent: { id: string; firstName: string; lastName: string } }[];
   department?: { id: string; name: string };
   category?: { id: string; name: string };
+  site?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -24,9 +25,10 @@ export interface PaginatedTickets {
 export interface CreateTicketData {
   title: string;
   description: string;
-  priority?: string;
-  departmentId?: string;
-  categoryId?: string;
+  priority: string;
+  departmentId: string;
+  categoryId: string;
+  site: string;
 }
 
 export interface TicketEvent {
