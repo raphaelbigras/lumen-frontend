@@ -37,9 +37,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             id: parsed.sub,
             email: parsed.email,
             name: `${parsed.given_name} ${parsed.family_name}`,
-            role: parsed.realm_access?.roles?.includes('admin')
+            role: parsed.realm_access?.roles?.includes('ADMIN')
               ? 'ADMIN'
-              : parsed.realm_access?.roles?.includes('agent')
+              : parsed.realm_access?.roles?.includes('AGENT')
               ? 'AGENT'
               : 'USER',
           });

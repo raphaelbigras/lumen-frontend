@@ -1,7 +1,7 @@
 'use client';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
-import { Search, Bell, LogOut } from 'lucide-react';
+import { Bell, LogOut } from 'lucide-react';
 
 const ROUTE_LABELS: Record<string, string> = {
   '/dashboard': 'Tableau de bord',
@@ -21,15 +21,7 @@ export function Topbar() {
     <header className="h-12 border-b border-lumen-border-secondary bg-lumen-bg-secondary flex items-center justify-between px-5">
       <div className="text-xs font-medium text-lumen-text-secondary">Groupe Meloche Inc.</div>
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 bg-lumen-border-secondary border border-lumen-border-primary rounded-md px-3 py-1.5">
-          <Search size={14} className="text-lumen-text-tertiary" />
-          <input
-            type="text"
-            placeholder="Rechercher..."
-            className="bg-transparent text-xs text-lumen-text-secondary placeholder:text-lumen-text-tertiary outline-none w-40"
-          />
-        </div>
-        <button className="relative text-lumen-text-tertiary hover:text-lumen-text-secondary">
+<button className="relative text-lumen-text-tertiary hover:text-lumen-text-secondary">
           <Bell size={18} />
         </button>
         {user && (

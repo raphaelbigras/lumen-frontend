@@ -1,6 +1,6 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -144,6 +144,8 @@ export function TicketTable({ tickets, columnOrder, visibleColumns, onColumnOrde
   });
 
   const resizingRef = useRef<{ colId: string; startX: number; startWidth: number } | null>(null);
+  const topScrollRef = useRef<HTMLDivElement>(null);
+  const tableScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     localStorage.setItem('lumen-column-widths', JSON.stringify(colWidths));
@@ -179,6 +181,25 @@ export function TicketTable({ tickets, columnOrder, visibleColumns, onColumnOrde
 
   const displayColumns = columnOrder.filter((id) => visibleColumns.includes(id));
 
+  const totalTableWidth = useMemo(
+    () => displayColumns.reduce((sum, id) => sum + (colWidths[id] || DEFAULT_COL_WIDTHS[id] || 120), 0),
+    [displayColumns, colWidths],
+  );
+
+  useEffect(() => {
+    const top = topScrollRef.current;
+    const table = tableScrollRef.current;
+    if (!top || !table) return;
+    const syncFromTop = () => { table.scrollLeft = top.scrollLeft; };
+    const syncFromTable = () => { top.scrollLeft = table.scrollLeft; };
+    top.addEventListener('scroll', syncFromTop);
+    table.addEventListener('scroll', syncFromTable);
+    return () => {
+      top.removeEventListener('scroll', syncFromTop);
+      table.removeEventListener('scroll', syncFromTable);
+    };
+  }, []);
+
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (over && active.id !== over.id) {
@@ -190,7 +211,15 @@ export function TicketTable({ tickets, columnOrder, visibleColumns, onColumnOrde
 
   return (
     <div className="bg-lumen-bg-secondary border border-lumen-border-secondary rounded-lg overflow-hidden">
-      <div className="overflow-x-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' }}>
+      {/* Top scrollbar mirror */}
+      <div
+        ref={topScrollRef}
+        className="overflow-x-auto"
+        style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent', height: '12px' }}
+      >
+        <div style={{ width: `${totalTableWidth}px`, height: '1px' }} />
+      </div>
+      <div ref={tableScrollRef} className="overflow-x-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' }}>
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <table className="w-full" style={{ tableLayout: 'fixed' }}>
           <thead className="bg-lumen-bg-tertiary">
