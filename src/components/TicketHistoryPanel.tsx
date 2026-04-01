@@ -4,7 +4,7 @@ import { ticketsApi, TicketEvent } from '../lib/api/tickets';
 import { STATUS_LABELS, PRIORITY_LABELS } from '../lib/translations';
 import {
   X,
-  TicketPlus,
+  Plus,
   ArrowRightLeft,
   Gauge,
   Tag,
@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 const EVENT_CONFIG: Record<string, { label: string; icon: any; color: string }> = {
-  TICKET_CREATED: { label: 'Billet créé', icon: TicketPlus, color: 'text-blue-400' },
+  TICKET_CREATED: { label: 'Billet créé', icon: Plus, color: 'text-blue-400' },
   STATUS_CHANGED: { label: 'Statut modifié', icon: ArrowRightLeft, color: 'text-purple-400' },
   PRIORITY_CHANGED: { label: 'Priorité modifiée', icon: Gauge, color: 'text-orange-400' },
   CATEGORY_CHANGED: { label: 'Catégorie modifiée', icon: Tag, color: 'text-teal-400' },
