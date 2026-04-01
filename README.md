@@ -1,6 +1,6 @@
 # Lumen Frontend
 
-Next.js 14 (App Router) UI for **Lumen** — a self-hosted IT ticketing system for Groupe Meloche Inc. (600+ employees). Features a dark-themed dashboard, real-time ticket management, and full admin controls. Integrates with Keycloak for SSO and communicates with the NestJS backend via JWT-authenticated REST API.
+Next.js 14 (App Router) UI for **Lumen** — a self-hosted IT ticketing system. Features a dark-themed dashboard, real-time ticket management, and full admin controls. Integrates with Keycloak for SSO and communicates with the NestJS backend via JWT-authenticated REST API.
 
 ## Tech Stack
 
