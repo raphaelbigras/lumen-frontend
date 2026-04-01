@@ -7,7 +7,8 @@ import { attachmentsApi } from '../../../../lib/api/attachments';
 import { TicketStatusBadge } from '../../../../components/TicketStatusBadge';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { STATUS_LABELS, PRIORITY_LABELS, PRIORITY_COLORS } from '../../../../lib/translations';
-import { Paperclip, Download, Trash2, Upload, FileText, Image, File, CheckCircle2, X } from 'lucide-react';
+import { Paperclip, Download, Trash2, Upload, FileText, Image, File, CheckCircle2, X, History } from 'lucide-react';
+import { TicketHistoryPanel } from '../../../../components/TicketHistoryPanel';
 
 const STATUSES = ['OPEN', 'IN_PROGRESS', 'PENDING', 'RESOLVED', 'CLOSED'];
 
@@ -19,6 +20,7 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
   const [uploading, setUploading] = useState(false);
   const [showCloseModal, setShowCloseModal] = useState(false);
   const [closeReason, setCloseReason] = useState('');
+  const [showHistory, setShowHistory] = useState(false);
 
   const { data: ticket, isLoading } = useQuery({
     queryKey: ['ticket', params.id],
@@ -240,6 +242,15 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
                 <dt className="text-lumen-text-tertiary">Créé le</dt>
                 <dd className="font-medium text-lumen-text-primary mt-0.5">{new Date(ticket.createdAt).toLocaleDateString('fr-FR')}</dd>
               </div>
+                <div className="pt-2 mt-2 border-t border-lumen-border-secondary">
+                  <button
+                    onClick={() => setShowHistory(true)}
+                    className="w-full flex items-center justify-center gap-2 bg-lumen-bg-secondary border border-lumen-border-primary px-3 py-2 rounded-lg text-xs font-medium text-lumen-text-secondary hover:text-lumen-text-primary hover:border-primary transition-colors"
+                  >
+                    <History size={14} />
+                    Historique du billet
+                  </button>
+                </div>
             </dl>
           </div>
 
@@ -311,6 +322,10 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
           </div>
         </div>
       )}
+
+        {showHistory && (
+          <TicketHistoryPanel ticketId={params.id} onClose={() => setShowHistory(false)} />
+        )}
     </div>
   );
 }

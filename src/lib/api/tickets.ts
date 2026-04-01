@@ -29,10 +29,22 @@ export interface CreateTicketData {
   categoryId?: string;
 }
 
+export interface TicketEvent {
+  id: string;
+  ticketId: string;
+  actorId: string;
+  actor: { id: string; firstName: string; lastName: string };
+  type: string;
+  payload: Record<string, any>;
+  createdAt: string;
+}
+
 export const ticketsApi = {
   getAll: (params?: Record<string, string>) =>
     apiClient.get<PaginatedTickets>('/tickets', { params }).then((r) => r.data),
   getById: (id: string) => apiClient.get<Ticket>(`/tickets/${id}`).then((r) => r.data),
+  getEvents: (id: string) =>
+    apiClient.get<TicketEvent[]>(`/tickets/${id}/events`).then((r) => r.data),
   create: (data: CreateTicketData) => apiClient.post<Ticket>('/tickets', data).then((r) => r.data),
   update: (id: string, data: Partial<Ticket>) =>
     apiClient.patch<Ticket>(`/tickets/${id}`, data).then((r) => r.data),
