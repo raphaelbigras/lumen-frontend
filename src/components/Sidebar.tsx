@@ -46,11 +46,26 @@ export function Sidebar() {
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-[220px] bg-lumen-bg-sidebar border-r border-lumen-border-secondary flex flex-col py-4 px-3 z-50">
-      <Link href="/dashboard" className="flex items-center gap-2.5 px-2 mb-6">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-extrabold text-base shadow-lg shadow-primary/20">
-          L
+      <Link href="/dashboard" className="flex items-center justify-center gap-3 px-2 mb-6 group">
+        <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-accent to-blue-500 flex items-center justify-center shadow-lg shadow-primary/30 group-hover:shadow-primary/60 group-hover:scale-105 transition-all duration-300">
+          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary via-accent to-blue-500 opacity-0 group-hover:opacity-50 blur-md transition-opacity duration-300" />
+          <span className="relative text-white font-black text-lg" style={{ fontFamily: "'Orbitron', sans-serif" }}>L</span>
         </div>
-        <span className="text-[15px] font-bold tracking-tight text-lumen-text-primary">Lumen</span>
+        <div className="relative">
+          <span
+            className="absolute inset-0 text-[17px] font-black tracking-wider text-primary blur-md opacity-0 group-hover:opacity-60 transition-opacity duration-300"
+            style={{ fontFamily: "'Orbitron', sans-serif" }}
+            aria-hidden="true"
+          >
+            LUMEN
+          </span>
+          <span
+            className="relative text-[17px] font-black tracking-wider bg-gradient-to-r from-white via-blue-200 to-primary bg-clip-text text-transparent group-hover:from-blue-100 group-hover:via-white group-hover:to-blue-300 transition-all duration-300"
+            style={{ fontFamily: "'Orbitron', sans-serif" }}
+          >
+            LUMEN
+          </span>
+        </div>
       </Link>
 
       <div className="text-[10px] font-semibold uppercase tracking-widest text-lumen-text-tertiary/60 px-3 mb-2">Navigation</div>

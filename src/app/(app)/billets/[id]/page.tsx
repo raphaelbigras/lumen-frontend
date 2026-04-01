@@ -136,7 +136,9 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
         <div className="col-span-2 space-y-5">
           <div className="bg-lumen-bg-tertiary border border-lumen-border-primary rounded-xl p-5">
             <div className="flex items-start justify-between mb-4">
-              <h1 className="text-lg font-bold text-lumen-text-primary">{ticket.title}</h1>
+              <h1 className="text-lg font-bold text-lumen-text-primary">
+                <span className="text-primary">#{ticket.ticketNumber}</span> — {ticket.title}
+              </h1>
               <TicketStatusBadge status={ticket.status} />
             </div>
             <p className="text-sm text-lumen-text-secondary whitespace-pre-wrap">{ticket.description}</p>

@@ -32,6 +32,7 @@ interface TicketTableProps {
 }
 
 const DEFAULT_COL_WIDTHS: Record<string, number> = {
+  numero: 70,
   title: 220,
   status: 110,
   priority: 110,
@@ -44,6 +45,7 @@ const DEFAULT_COL_WIDTHS: Record<string, number> = {
 };
 
 const COLUMN_DEFS: Record<string, { label: string; render: (t: Ticket) => React.ReactNode }> = {
+  numero: { label: 'ID', render: (t) => <span className="font-bold text-primary">#{t.ticketNumber}</span> },
   title: { label: 'Titre', render: (t) => <span className="font-medium text-lumen-text-primary">{t.title}</span> },
   status: { label: 'Statut', render: (t) => <TicketStatusBadge status={t.status} /> },
   priority: {
@@ -70,7 +72,7 @@ const COLUMN_DEFS: Record<string, { label: string; render: (t: Ticket) => React.
   updated: { label: 'Modifié le', render: (t) => <span className="text-lumen-text-tertiary">{new Date(t.updatedAt).toLocaleDateString('fr-FR')}</span> },
 };
 
-const SORT_MAP: Record<string, string> = { title: 'title', status: 'status', priority: 'priority', category: 'category', submitter: 'submitter', assignee: 'assignee', department: 'department', site: 'site', created: 'createdAt', updated: 'updatedAt' };
+const SORT_MAP: Record<string, string> = { numero: 'ticketNumber', title: 'title', status: 'status', priority: 'priority', category: 'category', submitter: 'submitter', assignee: 'assignee', department: 'department', site: 'site', created: 'createdAt', updated: 'updatedAt' };
 
 function SortableHeader({
   id,
@@ -187,7 +189,8 @@ export function TicketTable({ tickets, columnOrder, visibleColumns, onColumnOrde
   }
 
   return (
-    <div className="bg-lumen-bg-secondary border border-lumen-border-secondary rounded-lg overflow-hidden overflow-x-auto">
+    <div className="bg-lumen-bg-secondary border border-lumen-border-secondary rounded-lg overflow-hidden">
+      <div className="overflow-x-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' }}>
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <table className="w-full" style={{ tableLayout: 'fixed' }}>
           <thead className="bg-lumen-bg-tertiary">
@@ -243,6 +246,7 @@ export function TicketTable({ tickets, columnOrder, visibleColumns, onColumnOrde
           </tbody>
         </table>
       </DndContext>
+      </div>
     </div>
   );
 }
