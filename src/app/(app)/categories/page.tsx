@@ -6,6 +6,8 @@ import { departmentsApi, Department } from '../../../lib/api/departments';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Trash2, Plus, Pencil } from 'lucide-react';
+import { createCategorySchema } from '../../../lib/schemas/category.schema';
+import { createDepartmentSchema } from '../../../lib/schemas/department.schema';
 
 export default function CustomFieldsPage() {
   const { user } = useAuth();
@@ -20,11 +22,14 @@ export default function CustomFieldsPage() {
   const [catCreating, setCatCreating] = useState(false);
   const [catNewName, setCatNewName] = useState('');
 
+  const [catError, setCatError] = useState('');
+
   // Departments state
   const [depEditingId, setDepEditingId] = useState<string | null>(null);
   const [depEditName, setDepEditName] = useState('');
   const [depCreating, setDepCreating] = useState(false);
   const [depNewName, setDepNewName] = useState('');
+  const [depError, setDepError] = useState('');
 
   useEffect(() => {
     if (user && user.role === 'USER') router.replace('/dashboard');
@@ -39,13 +44,27 @@ export default function CustomFieldsPage() {
 
   const catCreateMutation = useMutation({
     mutationFn: categoriesApi.create,
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['categories'] }); setCatCreating(false); setCatNewName(''); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['categories'] }); setCatCreating(false); setCatNewName(''); setCatError(''); },
   });
 
   const catUpdateMutation = useMutation({
     mutationFn: ({ id, name }: { id: string; name: string }) => categoriesApi.update(id, { name }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['categories'] }); setCatEditingId(null); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['categories'] }); setCatEditingId(null); setCatError(''); },
   });
+
+  const validateAndCreateCat = (name: string) => {
+    const result = createCategorySchema.safeParse({ name });
+    if (!result.success) { setCatError(result.error.issues[0].message); return; }
+    setCatError('');
+    catCreateMutation.mutate(result.data);
+  };
+
+  const validateAndUpdateCat = (id: string, name: string) => {
+    const result = createCategorySchema.safeParse({ name });
+    if (!result.success) { setCatError(result.error.issues[0].message); return; }
+    setCatError('');
+    catUpdateMutation.mutate({ id, name: result.data.name });
+  };
 
   const catDeleteMutation = useMutation({
     mutationFn: categoriesApi.delete,
@@ -61,13 +80,27 @@ export default function CustomFieldsPage() {
 
   const depCreateMutation = useMutation({
     mutationFn: departmentsApi.create,
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['departments'] }); setDepCreating(false); setDepNewName(''); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['departments'] }); setDepCreating(false); setDepNewName(''); setDepError(''); },
   });
 
   const depUpdateMutation = useMutation({
     mutationFn: ({ id, name }: { id: string; name: string }) => departmentsApi.update(id, { name }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['departments'] }); setDepEditingId(null); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['departments'] }); setDepEditingId(null); setDepError(''); },
   });
+
+  const validateAndCreateDep = (name: string) => {
+    const result = createDepartmentSchema.safeParse({ name });
+    if (!result.success) { setDepError(result.error.issues[0].message); return; }
+    setDepError('');
+    depCreateMutation.mutate(result.data);
+  };
+
+  const validateAndUpdateDep = (id: string, name: string) => {
+    const result = createDepartmentSchema.safeParse({ name });
+    if (!result.success) { setDepError(result.error.issues[0].message); return; }
+    setDepError('');
+    depUpdateMutation.mutate({ id, name: result.data.name });
+  };
 
   const depDeleteMutation = useMutation({
     mutationFn: departmentsApi.delete,
@@ -103,6 +136,9 @@ export default function CustomFieldsPage() {
       </div>
 
       {/* Categories Table */}
+      {tab === 'categories' && catError && (
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-lg p-3 mb-3">{catError}</div>
+      )}
       {tab === 'categories' && (
         <div className="bg-lumen-bg-secondary rounded-lg border border-lumen-border-secondary">
           {catLoading ? (
@@ -127,7 +163,7 @@ export default function CustomFieldsPage() {
                         value={catNewName}
                         onChange={(e) => setCatNewName(e.target.value)}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter' && catNewName.trim()) catCreateMutation.mutate({ name: catNewName.trim() });
+                          if (e.key === 'Enter' && catNewName.trim()) validateAndCreateCat(catNewName.trim());
                           if (e.key === 'Escape') { setCatCreating(false); setCatNewName(''); }
                         }}
                         placeholder="Nom de la catégorie..."
@@ -135,7 +171,7 @@ export default function CustomFieldsPage() {
                       />
                     </td>
                     <td className="px-4 py-2 text-right">
-                      <button onClick={() => catNewName.trim() && catCreateMutation.mutate({ name: catNewName.trim() })} disabled={!catNewName.trim()} className="text-xs text-primary hover:underline disabled:opacity-30 mr-2">Créer</button>
+                      <button onClick={() => catNewName.trim() && validateAndCreateCat(catNewName.trim())} disabled={!catNewName.trim()} className="text-xs text-primary hover:underline disabled:opacity-30 mr-2">Créer</button>
                       <button onClick={() => setCatCreating(false)} className="text-xs text-lumen-text-tertiary hover:text-lumen-text-secondary">Annuler</button>
                     </td>
                   </tr>
@@ -148,10 +184,10 @@ export default function CustomFieldsPage() {
                           autoFocus type="text" value={catEditName}
                           onChange={(e) => setCatEditName(e.target.value)}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter' && catEditName.trim()) catUpdateMutation.mutate({ id: catEditingId!, name: catEditName.trim() });
+                            if (e.key === 'Enter' && catEditName.trim()) validateAndUpdateCat(catEditingId!, catEditName.trim());
                             if (e.key === 'Escape') setCatEditingId(null);
                           }}
-                          onBlur={() => catEditName.trim() && catUpdateMutation.mutate({ id: catEditingId!, name: catEditName.trim() })}
+                          onBlur={() => catEditName.trim() && validateAndUpdateCat(catEditingId!, catEditName.trim())}
                           className="bg-lumen-bg-secondary border border-lumen-border-primary rounded px-2 py-1 text-sm text-lumen-text-primary outline-none focus:border-primary w-64"
                         />
                       ) : (
@@ -181,6 +217,9 @@ export default function CustomFieldsPage() {
       )}
 
       {/* Departments Table */}
+      {tab === 'departments' && depError && (
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-lg p-3 mb-3">{depError}</div>
+      )}
       {tab === 'departments' && (
         <div className="bg-lumen-bg-secondary rounded-lg border border-lumen-border-secondary">
           {depLoading ? (
@@ -203,7 +242,7 @@ export default function CustomFieldsPage() {
                         autoFocus type="text" value={depNewName}
                         onChange={(e) => setDepNewName(e.target.value)}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter' && depNewName.trim()) depCreateMutation.mutate({ name: depNewName.trim() });
+                          if (e.key === 'Enter' && depNewName.trim()) validateAndCreateDep(depNewName.trim());
                           if (e.key === 'Escape') { setDepCreating(false); setDepNewName(''); }
                         }}
                         placeholder="Nom du département..."
@@ -211,7 +250,7 @@ export default function CustomFieldsPage() {
                       />
                     </td>
                     <td className="px-4 py-2 text-right">
-                      <button onClick={() => depNewName.trim() && depCreateMutation.mutate({ name: depNewName.trim() })} disabled={!depNewName.trim()} className="text-xs text-primary hover:underline disabled:opacity-30 mr-2">Créer</button>
+                      <button onClick={() => depNewName.trim() && validateAndCreateDep(depNewName.trim())} disabled={!depNewName.trim()} className="text-xs text-primary hover:underline disabled:opacity-30 mr-2">Créer</button>
                       <button onClick={() => setDepCreating(false)} className="text-xs text-lumen-text-tertiary hover:text-lumen-text-secondary">Annuler</button>
                     </td>
                   </tr>
@@ -224,10 +263,10 @@ export default function CustomFieldsPage() {
                           autoFocus type="text" value={depEditName}
                           onChange={(e) => setDepEditName(e.target.value)}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter' && depEditName.trim()) depUpdateMutation.mutate({ id: depEditingId!, name: depEditName.trim() });
+                            if (e.key === 'Enter' && depEditName.trim()) validateAndUpdateDep(depEditingId!, depEditName.trim());
                             if (e.key === 'Escape') setDepEditingId(null);
                           }}
-                          onBlur={() => depEditName.trim() && depUpdateMutation.mutate({ id: depEditingId!, name: depEditName.trim() })}
+                          onBlur={() => depEditName.trim() && validateAndUpdateDep(depEditingId!, depEditName.trim())}
                           className="bg-lumen-bg-secondary border border-lumen-border-primary rounded px-2 py-1 text-sm text-lumen-text-primary outline-none focus:border-primary w-64"
                         />
                       ) : (
