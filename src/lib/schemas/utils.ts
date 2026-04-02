@@ -1,9 +1,9 @@
-import { ZodError } from 'zod';
+import type { z } from 'zod';
 
 /**
  * Convert a ZodError into a Record<field, message> for per-field display.
  */
-export function mapZodErrors(error: ZodError): Record<string, string> {
+export function mapZodErrors(error: z.ZodError): Record<string, string> {
   const map: Record<string, string> = {};
   for (const issue of error.issues) {
     const key = issue.path.join('.');
