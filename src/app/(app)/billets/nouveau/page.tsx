@@ -10,10 +10,10 @@ import { PRIORITY_LABELS } from '../../../../lib/translations';
 import { Paperclip, X, Upload, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { CustomSelect } from '../../../../components/CustomSelect';
+import { createTicketSchema, MAX_FILE_SIZE } from '../../../../lib/schemas/ticket.schema';
+import { mapZodErrors } from '../../../../lib/schemas/utils';
 
 const SITES = ['Valleyfield', 'Beauharnois', 'Montréal', 'Brossard', 'Bromont', 'Hemmingford'];
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 function formatFileSize(bytes: number) {
   if (bytes < 1024) return `${bytes} o`;
@@ -30,6 +30,7 @@ export default function NouveauBilletPage() {
   const [departmentId, setDepartmentId] = useState('');
   const [site, setSite] = useState('');
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [files, setFiles] = useState<File[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
@@ -104,18 +105,23 @@ export default function NouveauBilletPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!categoryId || !departmentId || !site) {
-      setError('Tous les champs sont obligatoires.');
-      return;
-    }
-    mutation.mutate({
+    setFieldErrors({});
+
+    const result = createTicketSchema.safeParse({
       title: title.trim(),
       description: description.trim(),
       priority,
-      categoryId,
-      departmentId,
-      site,
+      categoryId: categoryId || undefined,
+      departmentId: departmentId || undefined,
+      site: site || undefined,
     });
+
+    if (!result.success) {
+      setFieldErrors(mapZodErrors(result.error));
+      return;
+    }
+
+    mutation.mutate(result.data);
   };
 
   return (
@@ -139,25 +145,25 @@ export default function NouveauBilletPage() {
           <label className="block text-xs text-lumen-text-tertiary mb-1.5">Titre *</label>
           <input
             type="text"
-            required
             maxLength={200}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Décrivez brièvement le problème..."
-            className="w-full bg-lumen-bg-secondary border border-lumen-border-primary rounded-lg px-3 py-2 text-sm text-lumen-text-primary placeholder:text-lumen-text-tertiary outline-none focus:border-primary"
+            className={`w-full bg-lumen-bg-secondary border rounded-lg px-3 py-2 text-sm text-lumen-text-primary placeholder:text-lumen-text-tertiary outline-none focus:border-primary ${fieldErrors.title ? 'border-red-500/50' : 'border-lumen-border-primary'}`}
           />
+          {fieldErrors.title && <p className="text-red-400 text-[11px] mt-1">{fieldErrors.title}</p>}
         </div>
 
         <div>
           <label className="block text-xs text-lumen-text-tertiary mb-1.5">Description *</label>
           <textarea
-            required
             rows={6}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Fournissez les détails du problème, les étapes pour le reproduire..."
-            className="w-full bg-lumen-bg-secondary border border-lumen-border-primary rounded-lg px-3 py-2 text-sm text-lumen-text-primary placeholder:text-lumen-text-tertiary outline-none focus:border-primary resize-none"
+            className={`w-full bg-lumen-bg-secondary border rounded-lg px-3 py-2 text-sm text-lumen-text-primary placeholder:text-lumen-text-tertiary outline-none focus:border-primary resize-none ${fieldErrors.description ? 'border-red-500/50' : 'border-lumen-border-primary'}`}
           />
+          {fieldErrors.description && <p className="text-red-400 text-[11px] mt-1">{fieldErrors.description}</p>}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -171,12 +177,13 @@ export default function NouveauBilletPage() {
             />
           </div>
           <div>
-            <label className="block text-xs text-lumen-text-tertiary mb-1.5">Catégorie</label>
+            <label className="block text-xs text-lumen-text-tertiary mb-1.5">Catégorie <span className="text-red-400">*</span></label>
             <CustomSelect
               value={categoryId}
               onChange={setCategoryId}
               options={categories?.map((c) => ({ value: c.id, label: c.name })) || []}
             />
+            {fieldErrors.categoryId && <p className="text-red-400 text-[11px] mt-1">{fieldErrors.categoryId}</p>}
           </div>
         </div>
 
@@ -188,6 +195,7 @@ export default function NouveauBilletPage() {
               onChange={setDepartmentId}
               options={departments?.map((d) => ({ value: d.id, label: d.name })) || []}
             />
+            {fieldErrors.departmentId && <p className="text-red-400 text-[11px] mt-1">{fieldErrors.departmentId}</p>}
           </div>
           <div>
             <label className="block text-xs text-lumen-text-tertiary mb-1.5">Site (usine ou bureau) <span className="text-red-400">*</span></label>
@@ -196,6 +204,7 @@ export default function NouveauBilletPage() {
               onChange={setSite}
               options={SITES.map((s) => ({ value: s, label: s }))}
             />
+            {fieldErrors.site && <p className="text-red-400 text-[11px] mt-1">{fieldErrors.site}</p>}
           </div>
         </div>
 
@@ -256,7 +265,7 @@ export default function NouveauBilletPage() {
         <div className="flex items-center gap-3 pt-2">
           <button
             type="submit"
-            disabled={mutation.isPending || !title.trim() || !description.trim()}
+            disabled={mutation.isPending}
             className="bg-gradient-to-r from-primary to-accent text-white px-5 py-2 rounded-lg text-xs font-semibold disabled:opacity-50"
           >
             {uploadProgress || (mutation.isPending ? 'Création...' : 'Créer le billet')}

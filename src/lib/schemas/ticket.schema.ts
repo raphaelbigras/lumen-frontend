@@ -12,15 +12,13 @@ export const createTicketSchema = z.object({
     errorMap: () => ({ message: 'Priorité invalide' }),
   }),
   categoryId: z
-    .string()
-    .uuid('Catégorie invalide')
-    .min(1, 'La catégorie est obligatoire'),
+    .string({ required_error: 'La catégorie est obligatoire' })
+    .uuid('Catégorie invalide'),
   departmentId: z
-    .string()
-    .uuid('Département invalide')
-    .min(1, 'Le département est obligatoire'),
+    .string({ required_error: 'Le département est obligatoire' })
+    .uuid('Département invalide'),
   site: z
-    .string()
+    .string({ required_error: 'Le site est obligatoire' })
     .min(1, 'Le site est obligatoire'),
 });
 
