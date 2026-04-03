@@ -24,12 +24,12 @@ export function CustomFieldsClient({ categories, departments, initialTab }: Cust
   return (
     <div>
       <div className="flex items-center justify-between mb-5">
-        <h1 className="text-lg font-bold">Champs personnalises</h1>
+        <h1 className="text-lg font-bold">Champs personnalisés</h1>
         <button
           onClick={() => setCreating(true)}
           className="flex items-center gap-1.5 bg-gradient-to-r from-primary to-accent text-white px-4 py-1.5 rounded-lg text-xs font-semibold"
         >
-          <Plus size={14} /> {tab === 'categories' ? 'Nouvelle categorie' : 'Nouveau departement'}
+          <Plus size={14} /> {tab === 'categories' ? 'Nouvelle catégorie' : 'Nouveau département'}
         </button>
       </div>
 
@@ -38,13 +38,13 @@ export function CustomFieldsClient({ categories, departments, initialTab }: Cust
           onClick={() => switchTab('categories')}
           className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all ${tab === 'categories' ? 'bg-primary text-white shadow-sm' : 'text-lumen-text-secondary hover:text-lumen-text-primary'}`}
         >
-          Categories {categories && <span className="ml-1 opacity-60">({categories.length})</span>}
+          Catégories {categories && <span className="ml-1 opacity-60">({categories.length})</span>}
         </button>
         <button
           onClick={() => switchTab('departments')}
           className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all ${tab === 'departments' ? 'bg-primary text-white shadow-sm' : 'text-lumen-text-secondary hover:text-lumen-text-primary'}`}
         >
-          Departements {departments && <span className="ml-1 opacity-60">({departments.length})</span>}
+          Départements {departments && <span className="ml-1 opacity-60">({departments.length})</span>}
         </button>
       </div>
 

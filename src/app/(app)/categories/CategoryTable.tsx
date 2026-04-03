@@ -46,7 +46,7 @@ export function CategoryTable({ categories, creating, onCreateDone }: { categori
             <tr>
               <th className="px-4 py-3 text-left">Nom</th>
               <th className="px-4 py-3 text-left">Billets</th>
-              <th className="px-4 py-3 text-left">Cree le</th>
+              <th className="px-4 py-3 text-left">Créé le</th>
               <th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
@@ -61,12 +61,12 @@ export function CategoryTable({ categories, creating, onCreateDone }: { categori
                       if (e.key === 'Enter' && newName.trim()) handleCreate(newName);
                       if (e.key === 'Escape') { onCreateDone(); setNewName(''); }
                     }}
-                    placeholder="Nom de la categorie..."
+                    placeholder="Nom de la catégorie..."
                     className="bg-lumen-bg-secondary border border-lumen-border-primary rounded px-2 py-1 text-sm text-lumen-text-primary outline-none focus:border-primary w-64"
                   />
                 </td>
                 <td className="px-4 py-2 text-right">
-                  <button onClick={() => newName.trim() && handleCreate(newName)} disabled={!newName.trim()} className="text-xs text-primary hover:underline disabled:opacity-30 mr-2">Creer</button>
+                  <button onClick={() => newName.trim() && handleCreate(newName)} disabled={!newName.trim()} className="text-xs text-primary hover:underline disabled:opacity-30 mr-2">Créer</button>
                   <button onClick={() => { onCreateDone(); setNewName(''); }} className="text-xs text-lumen-text-tertiary hover:text-lumen-text-secondary">Annuler</button>
                 </td>
               </tr>
@@ -88,7 +88,7 @@ export function CategoryTable({ categories, creating, onCreateDone }: { categori
                   ) : (
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-lumen-text-primary">{cat.name}</span>
-                      {cat.isDefault && <span className="text-[10px] bg-lumen-bg-tertiary text-lumen-text-tertiary px-1.5 py-0.5 rounded">defaut</span>}
+                      {cat.isDefault && <span className="text-[10px] bg-lumen-bg-tertiary text-lumen-text-tertiary px-1.5 py-0.5 rounded">défaut</span>}
                     </div>
                   )}
                 </td>
@@ -108,7 +108,7 @@ export function CategoryTable({ categories, creating, onCreateDone }: { categori
               </tr>
             ))}
             {categories.length === 0 && !creating && (
-              <tr><td colSpan={4} className="px-4 py-8 text-center text-xs text-lumen-text-tertiary">Aucune categorie</td></tr>
+              <tr><td colSpan={4} className="px-4 py-8 text-center text-xs text-lumen-text-tertiary">Aucune catégorie</td></tr>
             )}
           </tbody>
         </table>

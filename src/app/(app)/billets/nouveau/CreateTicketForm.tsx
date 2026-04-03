@@ -144,7 +144,7 @@ export function CreateTicketForm({ categories, departments }: CreateTicketFormPr
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs text-lumen-text-tertiary mb-1.5">Priorite</label>
+            <label className="block text-xs text-lumen-text-tertiary mb-1.5">Priorité</label>
             <input type="hidden" name="priority" value={priority} />
             <CustomSelect
               value={priority}
@@ -154,7 +154,7 @@ export function CreateTicketForm({ categories, departments }: CreateTicketFormPr
             />
           </div>
           <div>
-            <label className="block text-xs text-lumen-text-tertiary mb-1.5">Categorie <span className="text-red-400">*</span></label>
+            <label className="block text-xs text-lumen-text-tertiary mb-1.5">Catégorie <span className="text-red-400">*</span></label>
             <input type="hidden" name="categoryId" value={categoryId} />
             <CustomSelect
               value={categoryId}
@@ -167,7 +167,7 @@ export function CreateTicketForm({ categories, departments }: CreateTicketFormPr
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs text-lumen-text-tertiary mb-1.5">Departement <span className="text-red-400">*</span></label>
+            <label className="block text-xs text-lumen-text-tertiary mb-1.5">Département <span className="text-red-400">*</span></label>
             <input type="hidden" name="departmentId" value={departmentId} />
             <CustomSelect
               value={departmentId}

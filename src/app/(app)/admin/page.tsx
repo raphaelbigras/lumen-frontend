@@ -22,7 +22,7 @@ export default async function AdminPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-bold text-lumen-text-primary mb-6">Parametres</h1>
+      <h1 className="text-2xl font-bold text-lumen-text-primary mb-6">Paramètres</h1>
       <div className="bg-lumen-bg-secondary rounded-lg border border-lumen-border-secondary">
         <div className="p-4 border-b border-lumen-border-secondary">
           <h2 className="font-semibold text-lumen-text-primary">Gestion des utilisateurs</h2>

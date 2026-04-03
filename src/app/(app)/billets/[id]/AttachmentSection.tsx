@@ -16,6 +16,7 @@ interface AttachmentSectionProps {
   ticketId: string;
   attachments: Attachment[];
   canManage: boolean;
+  userRole: string;
 }
 
 function getFileIcon(mimeType: string) {
@@ -30,7 +31,7 @@ function formatSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
 }
 
-export function AttachmentSection({ ticketId, attachments, canManage }: AttachmentSectionProps) {
+export function AttachmentSection({ ticketId, attachments, canManage, userRole }: AttachmentSectionProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -80,15 +81,15 @@ export function AttachmentSection({ ticketId, attachments, canManage }: Attachme
                 <span className="text-[10px] text-lumen-text-tertiary shrink-0">{formatSize(att.size)}</span>
                 <button
                   onClick={() => handleDownload(att.id)}
-                  className="text-lumen-text-tertiary hover:text-primary transition-colors shrink-0"
-                  title="Telecharger"
+                  className="px-2 py-1.5 rounded-md text-lumen-text-tertiary hover:text-primary hover:bg-primary/10 transition-colors shrink-0"
+                  title="Télécharger"
                 >
                   <Download size={14} />
                 </button>
-                {canManage && (
+                {userRole === 'ADMIN' && (
                   <button
-                    onClick={() => startTransition(() => deleteAttachmentAction(ticketId, att.id))}
-                    className="text-lumen-text-tertiary hover:text-red-400 transition-colors shrink-0 opacity-0 group-hover:opacity-100"
+                    onClick={() => confirm('Supprimer cette pièce jointe ?') && startTransition(() => deleteAttachmentAction(ticketId, att.id))}
+                    className="px-2 py-1.5 rounded-md text-lumen-text-tertiary hover:text-red-400 hover:bg-red-400/10 transition-colors shrink-0 opacity-0 group-hover:opacity-100 ml-1"
                     title="Supprimer"
                   >
                     <Trash2 size={14} />

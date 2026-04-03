@@ -40,12 +40,12 @@ export function DepartmentsClient({ departments }: { departments: Department[] }
   return (
     <div>
       <div className="flex items-center justify-between mb-5">
-        <h1 className="text-lg font-bold">Departements</h1>
+        <h1 className="text-lg font-bold">Départements</h1>
         <button
           onClick={() => { setCreating(true); setNewName(''); }}
           className="flex items-center gap-1.5 bg-gradient-to-r from-primary to-accent text-white px-4 py-1.5 rounded-lg text-xs font-semibold"
         >
-          <Plus size={14} /> Nouveau departement
+          <Plus size={14} /> Nouveau département
         </button>
       </div>
 
@@ -57,7 +57,7 @@ export function DepartmentsClient({ departments }: { departments: Department[] }
             <tr>
               <th className="px-4 py-3 text-left">Nom</th>
               <th className="px-4 py-3 text-left">Billets</th>
-              <th className="px-4 py-3 text-left">Cree le</th>
+              <th className="px-4 py-3 text-left">Créé le</th>
               <th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
@@ -72,12 +72,12 @@ export function DepartmentsClient({ departments }: { departments: Department[] }
                       if (e.key === 'Enter' && newName.trim()) handleCreate(newName);
                       if (e.key === 'Escape') { setCreating(false); setNewName(''); }
                     }}
-                    placeholder="Nom du departement..."
+                    placeholder="Nom du département..."
                     className="bg-lumen-bg-secondary border border-lumen-border-primary rounded px-2 py-1 text-sm text-lumen-text-primary outline-none focus:border-primary w-64"
                   />
                 </td>
                 <td className="px-4 py-2 text-right">
-                  <button onClick={() => newName.trim() && handleCreate(newName)} disabled={!newName.trim()} className="text-xs text-primary hover:underline disabled:opacity-30 mr-2">Creer</button>
+                  <button onClick={() => newName.trim() && handleCreate(newName)} disabled={!newName.trim()} className="text-xs text-primary hover:underline disabled:opacity-30 mr-2">Créer</button>
                   <button onClick={() => setCreating(false)} className="text-xs text-lumen-text-tertiary hover:text-lumen-text-secondary">Annuler</button>
                 </td>
               </tr>
@@ -115,7 +115,7 @@ export function DepartmentsClient({ departments }: { departments: Department[] }
               </tr>
             ))}
             {departments.length === 0 && !creating && (
-              <tr><td colSpan={4} className="px-4 py-8 text-center text-xs text-lumen-text-tertiary">Aucun departement</td></tr>
+              <tr><td colSpan={4} className="px-4 py-8 text-center text-xs text-lumen-text-tertiary">Aucun département</td></tr>
             )}
           </tbody>
         </table>

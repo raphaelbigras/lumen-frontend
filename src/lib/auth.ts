@@ -24,10 +24,15 @@ declare module '@auth/core/jwt' {
   }
 }
 
-function extractRole(token: any): 'ADMIN' | 'AGENT' | 'USER' {
-  const roles: string[] = token?.realm_access?.roles || [];
-  if (roles.includes('ADMIN')) return 'ADMIN';
-  if (roles.includes('AGENT')) return 'AGENT';
+function extractRoleFromAccessToken(accessToken: string): 'ADMIN' | 'AGENT' | 'USER' {
+  try {
+    const payload = JSON.parse(Buffer.from(accessToken.split('.')[1], 'base64').toString());
+    const roles: string[] = payload?.realm_access?.roles || [];
+    if (roles.includes('ADMIN')) return 'ADMIN';
+    if (roles.includes('AGENT')) return 'AGENT';
+  } catch (e) {
+    console.error('[auth] Failed to decode access token:', e);
+  }
   return 'USER';
 }
 
@@ -41,17 +46,16 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   ],
   session: { strategy: 'jwt' },
   callbacks: {
-    async jwt({ token, account, profile }) {
+    async jwt({ token, account }) {
       // First-time login — persist tokens and role
       if (account) {
-        return {
-          ...token,
-          access_token: account.access_token!,
-          expires_at: account.expires_at!,
-          refresh_token: account.refresh_token,
-          role: extractRole(profile),
-        };
+        token.access_token = account.access_token!;
+        token.expires_at = account.expires_at!;
+        token.refresh_token = account.refresh_token;
       }
+
+      // Always extract role from current access token
+      token.role = extractRoleFromAccessToken(token.access_token);
 
       // Token still valid
       if (Date.now() < token.expires_at * 1000) {
@@ -103,8 +107,5 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       session.user.role = token.role;
       return session;
     },
-  },
-  pages: {
-    signIn: '/api/auth/signin',
   },
 });

@@ -14,7 +14,14 @@ import type { DashboardData, UserDashboardData } from '../../../lib/api/analytic
 
 export default async function DashboardPage() {
   const session = await auth();
-  const role = session?.user?.role || 'USER';
+  if (!session?.accessToken) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <p className="text-lumen-text-tertiary">Chargement de la session...</p>
+      </div>
+    );
+  }
+  const role = session.user?.role || 'USER';
   const data = await serverFetch<DashboardData | UserDashboardData>('/analytics/dashboard');
 
   if (role === 'USER') {
@@ -36,7 +43,7 @@ export default async function DashboardPage() {
           <KpiCard label="Ouverts" value={d.myOpenCount} trendType={d.myOpenCount > 0 ? 'warning' : 'neutral'} />
           <KpiCard label="En cours" value={d.myInProgressCount} />
           <KpiCard label="En attente" value={d.myPendingCount} />
-          <KpiCard label="Resolus / Fermes" value={d.myResolvedCount + d.myClosedCount} trend={d.medianResolutionHours > 0 ? `~${d.medianResolutionHours}h mediane` : undefined} trendType="up" />
+          <KpiCard label="Résolus / Fermés" value={d.myResolvedCount + d.myClosedCount} trend={d.medianResolutionHours > 0 ? `~${d.medianResolutionHours}h médiane` : undefined} trendType="up" />
         </div>
 
         <div className="grid grid-cols-3 gap-3 mb-5">
@@ -51,7 +58,7 @@ export default async function DashboardPage() {
         </div>
 
         <div className="bg-lumen-bg-tertiary border border-lumen-border-primary rounded-xl p-4">
-          <h3 className="text-sm font-semibold mb-3">Mes billets recents</h3>
+          <h3 className="text-sm font-semibold mb-3">Mes billets récents</h3>
           {d.myTickets?.length === 0 && (
             <p className="text-xs text-lumen-text-tertiary py-4 text-center">Aucun billet pour le moment</p>
           )}
@@ -87,9 +94,9 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-5 gap-3 mb-5">
         <KpiCard label="Billets ouverts" value={d.kpis.openCount} trend={`${d.kpis.openTrend > 0 ? '\u2191' : '\u2192'} ${d.kpis.openTrend}%`} trendType={d.kpis.openTrend > 10 ? 'down' : 'neutral'} />
         <KpiCard label="En cours" value={d.kpis.inProgressCount} />
-        <KpiCard label="Resolus (mois)" value={d.kpis.resolvedMonthCount} trend={`${d.kpis.resolvedMonthTrend > 0 ? '\u2191' : '\u2193'} ${Math.abs(d.kpis.resolvedMonthTrend)}%`} trendType={d.kpis.resolvedMonthTrend >= 0 ? 'up' : 'down'} />
-        <KpiCard label="Temps median resolution" value={`${d.kpis.medianResolutionHours}h`} trend={`${d.kpis.medianResolutionTrend > 0 ? '\u2191' : '\u2193'} ${Math.abs(d.kpis.medianResolutionTrend)}h`} trendType={d.kpis.medianResolutionTrend <= 0 ? 'up' : 'down'} />
-        <KpiCard label="Non assignes" value={d.kpis.unassignedCount} trendType={d.kpis.unassignedCount > 0 ? 'warning' : 'neutral'} trend={d.kpis.unassignedCount > 0 ? '\u26a0 necessite attention' : '\u2713'} />
+        <KpiCard label="Résolus (mois)" value={d.kpis.resolvedMonthCount} trend={`${d.kpis.resolvedMonthTrend > 0 ? '\u2191' : '\u2193'} ${Math.abs(d.kpis.resolvedMonthTrend)}%`} trendType={d.kpis.resolvedMonthTrend >= 0 ? 'up' : 'down'} />
+        <KpiCard label="Temps médian résolution" value={`${d.kpis.medianResolutionHours}h`} trend={`${d.kpis.medianResolutionTrend > 0 ? '\u2191' : '\u2193'} ${Math.abs(d.kpis.medianResolutionTrend)}h`} trendType={d.kpis.medianResolutionTrend <= 0 ? 'up' : 'down'} />
+        <KpiCard label="Non assignés" value={d.kpis.unassignedCount} trendType={d.kpis.unassignedCount > 0 ? 'warning' : 'neutral'} trend={d.kpis.unassignedCount > 0 ? '\u26a0 nécessite attention' : '\u2713'} />
       </div>
 
       <div className="grid grid-cols-3 gap-3 mb-5">

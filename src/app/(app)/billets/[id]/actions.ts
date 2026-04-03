@@ -14,13 +14,13 @@ export async function addCommentAction(ticketId: string, body: string) {
 }
 
 export async function closeTicketAction(ticketId: string, reason: string) {
-  await serverPost(`/tickets/${ticketId}/comments`, { body: `Resolu par le demandeur : ${reason}` });
+  await serverPost(`/tickets/${ticketId}/comments`, { body: `Résolu par le demandeur : ${reason}` });
   await serverPatch(`/tickets/${ticketId}`, { status: 'CLOSED' });
   revalidatePath(`/billets/${ticketId}`);
 }
 
 export async function reopenTicketAction(ticketId: string, reason: string) {
-  await serverPost(`/tickets/${ticketId}/comments`, { body: `Billet reouvert par le demandeur : ${reason}` });
+  await serverPost(`/tickets/${ticketId}/comments`, { body: `Billet réouvert par le demandeur : ${reason}` });
   await serverPatch(`/tickets/${ticketId}`, { status: 'OPEN' });
   revalidatePath(`/billets/${ticketId}`);
 }

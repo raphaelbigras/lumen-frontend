@@ -6,10 +6,10 @@ import { SidebarNavLink } from './SidebarNavLink';
 const NAV_ITEMS = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Tableau de bord', roles: ['ADMIN', 'AGENT', 'USER'], color: 'from-blue-500/20 to-blue-600/10 text-blue-400', activeGlow: 'shadow-blue-500/10' },
   { href: '/billets', icon: Ticket, label: 'Billets', roles: ['ADMIN', 'AGENT', 'USER'], color: 'from-violet-500/20 to-purple-600/10 text-violet-400', activeGlow: 'shadow-violet-500/10' },
-  { href: '/categories', icon: SlidersHorizontal, label: 'Champs personnalises', roles: ['ADMIN', 'AGENT'], color: 'from-amber-500/20 to-orange-600/10 text-amber-400', activeGlow: 'shadow-amber-500/10' },
+  { href: '/categories', icon: SlidersHorizontal, label: 'Champs personnalisés', roles: ['ADMIN', 'AGENT'], color: 'from-amber-500/20 to-orange-600/10 text-amber-400', activeGlow: 'shadow-amber-500/10' },
 ];
 
-const ADMIN_ITEM = { href: '/admin', icon: Settings, label: 'Parametres', color: 'from-slate-400/20 to-slate-500/10 text-slate-400', activeGlow: 'shadow-slate-400/10' };
+const ADMIN_ITEM = { href: '/admin', icon: Settings, label: 'Paramètres', color: 'from-slate-400/20 to-slate-500/10 text-slate-400', activeGlow: 'shadow-slate-400/10' };
 
 interface SidebarProps {
   collapsed: boolean;
@@ -73,7 +73,7 @@ export function Sidebar({ collapsed, onToggle, userRole }: SidebarProps) {
       <button
         onClick={onToggle}
         className="mt-3 flex items-center justify-center w-full py-2 rounded-xl text-lumen-text-tertiary hover:text-lumen-text-primary hover:bg-white/[0.03] transition-all duration-200"
-        title={collapsed ? 'Agrandir' : 'Reduire'}
+        title={collapsed ? 'Agrandir' : 'Réduire'}
       >
         {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
       </button>

@@ -132,6 +132,8 @@ export function TicketHistoryPanel({
   const { data: events, isLoading } = useQuery({
     queryKey: ['ticket-events', ticketId],
     queryFn: () => ticketsApi.getEvents(ticketId),
+    staleTime: 0,
+    gcTime: 0,
   });
 
   return (

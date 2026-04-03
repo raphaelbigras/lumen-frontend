@@ -10,16 +10,20 @@ interface AppShellProps {
 }
 
 export function AppShell({ children, userRole, userName }: AppShellProps) {
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('sidebar-collapsed') === 'true';
-    }
-    return false;
-  });
+  const [collapsed, setCollapsed] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('sidebar-collapsed', String(collapsed));
-  }, [collapsed]);
+    const saved = localStorage.getItem('sidebar-collapsed') === 'true';
+    setCollapsed(saved);
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      localStorage.setItem('sidebar-collapsed', String(collapsed));
+    }
+  }, [collapsed, mounted]);
 
   return (
     <div className="flex h-screen bg-lumen-bg-primary overflow-hidden">

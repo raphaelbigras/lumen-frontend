@@ -57,11 +57,11 @@ export default async function TicketDetailPage({ params }: TicketDetailPageProps
           </div>
 
           {/* Attachments */}
-          <AttachmentSection ticketId={id} attachments={attachments} canManage={canManage} />
+          <AttachmentSection ticketId={id} attachments={attachments} canManage={canManage} userRole={userRole} />
 
           {/* Comments */}
           <div className="bg-lumen-bg-tertiary border border-lumen-border-primary rounded-xl p-5">
-            <h2 className="font-semibold text-lumen-text-primary mb-4">Activite</h2>
+            <h2 className="font-semibold text-lumen-text-primary mb-4">Activité</h2>
             <div className="space-y-4">
               {ticket.comments?.map((comment: any) => (
                 <div key={comment.id} className="flex gap-3">
@@ -90,7 +90,7 @@ export default async function TicketDetailPage({ params }: TicketDetailPageProps
             <h3 className="text-[11px] font-semibold text-lumen-text-tertiary uppercase tracking-wider mb-3">Details</h3>
             <dl className="space-y-3 text-xs">
               <div>
-                <dt className="text-lumen-text-tertiary">Priorite</dt>
+                <dt className="text-lumen-text-tertiary">Priorité</dt>
                 <dd className="font-medium text-lumen-text-primary flex items-center gap-1.5 mt-0.5">
                   <span className={`inline-block w-2 h-2 rounded-full ${PRIORITY_COLORS[ticket.priority]}`} />
                   {PRIORITY_LABELS[ticket.priority] || ticket.priority}
@@ -98,7 +98,7 @@ export default async function TicketDetailPage({ params }: TicketDetailPageProps
               </div>
               {ticket.category && (
                 <div>
-                  <dt className="text-lumen-text-tertiary">Categorie</dt>
+                  <dt className="text-lumen-text-tertiary">Catégorie</dt>
                   <dd className="font-medium text-lumen-text-primary mt-0.5">{ticket.category.name}</dd>
                 </div>
               )}
@@ -108,12 +108,12 @@ export default async function TicketDetailPage({ params }: TicketDetailPageProps
               </div>
               {ticket.department && (
                 <div>
-                  <dt className="text-lumen-text-tertiary">Departement</dt>
+                  <dt className="text-lumen-text-tertiary">Département</dt>
                   <dd className="font-medium text-lumen-text-primary mt-0.5">{ticket.department.name}</dd>
                 </div>
               )}
               <div>
-                <dt className="text-lumen-text-tertiary">Cree le</dt>
+                <dt className="text-lumen-text-tertiary">Créé le</dt>
                 <dd className="font-medium text-lumen-text-primary mt-0.5">{new Date(ticket.createdAt).toLocaleDateString('fr-FR')}</dd>
               </div>
               <div className="pt-2 mt-2 border-t border-lumen-border-secondary">

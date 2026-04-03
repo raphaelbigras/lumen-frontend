@@ -136,14 +136,14 @@ export function TicketListClient({
         '#': t.ticketNumber,
         Titre: t.title,
         Statut: STATUS_LABELS[t.status] || t.status,
-        Priorite: PRIORITY_LABELS[t.priority] || t.priority,
-        Categorie: t.category?.name || '',
+        Priorité: PRIORITY_LABELS[t.priority] || t.priority,
+        Catégorie: t.category?.name || '',
         'Soumis par': `${t.submitter.firstName} ${t.submitter.lastName}`,
-        'Assigne a': t.assignments?.[0]?.agent ? `${t.assignments[0].agent.firstName} ${t.assignments[0].agent.lastName}` : '',
-        Departement: t.department?.name || '',
+        'Assigné à': t.assignments?.[0]?.agent ? `${t.assignments[0].agent.firstName} ${t.assignments[0].agent.lastName}` : '',
+        Département: t.department?.name || '',
         Site: t.site || '',
-        'Cree le': new Date(t.createdAt).toLocaleDateString('fr-FR'),
-        'Modifie le': new Date(t.updatedAt).toLocaleDateString('fr-FR'),
+        'Créé le': new Date(t.createdAt).toLocaleDateString('fr-FR'),
+        'Modifié le': new Date(t.updatedAt).toLocaleDateString('fr-FR'),
       }));
       const headers = Object.keys(rows[0]);
       const csv = [headers.join(';'), ...rows.map((r) => headers.map((h) => `"${String((r as any)[h]).replace(/"/g, '""')}"`).join(';'))].join('\n');
@@ -165,14 +165,14 @@ export function TicketListClient({
     { id: 'numero', label: 'ID' },
     { id: 'title', label: 'Titre' },
     { id: 'status', label: 'Statut' },
-    { id: 'priority', label: 'Priorite' },
-    { id: 'category', label: 'Categorie' },
+    { id: 'priority', label: 'Priorité' },
+    { id: 'category', label: 'Catégorie' },
     { id: 'submitter', label: 'Soumis par' },
-    { id: 'assignee', label: 'Assigne a' },
-    { id: 'department', label: 'Departement' },
+    { id: 'assignee', label: 'Assigné à' },
+    { id: 'department', label: 'Département' },
     { id: 'site', label: 'Site' },
-    { id: 'created', label: 'Cree le' },
-    { id: 'updated', label: 'Modifie le' },
+    { id: 'created', label: 'Créé le' },
+    { id: 'updated', label: 'Modifié le' },
   ];
 
   return (
