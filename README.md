@@ -127,7 +127,7 @@ src/
 - All fields are **required**: title, description, priority, category, department, site
 - **Site selector**: Valleyfield, Beauharnois, Montréal, Brossard, Bromont, Hemmingford
 - **File attachments**: drag-and-drop zone, 10 MB limit per file, multi-file upload with progress
-- Client-side validation + backend `class-validator` enforcement
+- Client-side validation + backend Zod schema enforcement
 
 ### Ticket Detail (`/billets/[id]`)
 - Full ticket view with description, metadata (priority, status, category, department, site, submitter, assignee)

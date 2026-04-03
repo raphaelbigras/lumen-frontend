@@ -1,45 +1,30 @@
-'use client';
-import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '../../../contexts/AuthContext';
-import { analyticsApi, DashboardData, UserDashboardData } from '../../../lib/api/analytics';
+import { Suspense } from 'react';
+import { auth } from '@/lib/auth';
+import { serverFetch } from '@/lib/api/server-client';
 import { KpiCard } from '../../../components/DashboardCharts/KpiCard';
 import { AgentPerformanceTable } from '../../../components/DashboardCharts/AgentPerformanceTable';
 import { AttentionList } from '../../../components/DashboardCharts/AttentionList';
 import { TicketStatusBadge } from '../../../components/TicketStatusBadge';
 import { PRIORITY_LABELS, PRIORITY_COLORS } from '../../../lib/translations';
+import { RefreshButton } from '../../../components/RefreshButton';
 import Link from 'next/link';
-import { RefreshCw } from 'lucide-react';
-import dynamic from 'next/dynamic';
+import { VolumeChart } from '../../../components/DashboardCharts/VolumeChart';
+import { CategoryDonut } from '../../../components/DashboardCharts/CategoryDonut';
+import type { DashboardData, UserDashboardData } from '../../../lib/api/analytics';
 
-const VolumeChart = dynamic(() => import('../../../components/DashboardCharts/VolumeChart').then(m => ({ default: m.VolumeChart })), { ssr: false });
-const CategoryDonut = dynamic(() => import('../../../components/DashboardCharts/CategoryDonut').then(m => ({ default: m.CategoryDonut })), { ssr: false });
+export default async function DashboardPage() {
+  const session = await auth();
+  const role = session?.user?.role || 'USER';
+  const data = await serverFetch<DashboardData | UserDashboardData>('/analytics/dashboard');
 
-export default function DashboardPage() {
-  const { user } = useAuth();
-  const { data, isLoading } = useQuery({
-    queryKey: ['analytics', 'dashboard'],
-    queryFn: analyticsApi.getDashboard,
-  });
-
-  const handleRefresh = () => window.location.reload();
-
-  if (isLoading) return <div className="text-lumen-text-tertiary">Chargement...</div>;
-  if (!data) return null;
-
-  // User dashboard
-  if (user?.role === 'USER') {
+  if (role === 'USER') {
     const d = data as UserDashboardData;
     return (
       <div>
         <div className="flex items-center justify-between mb-5">
           <h1 className="text-lg font-bold">Tableau de bord</h1>
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleRefresh}
-              className="flex items-center gap-1.5 bg-lumen-bg-tertiary border border-lumen-border-primary rounded-lg px-3 py-1.5 text-xs text-lumen-text-secondary hover:text-lumen-text-primary"
-            >
-              <RefreshCw size={14} />
-            </button>
+            <RefreshButton />
             <Link href="/billets/nouveau" className="bg-gradient-to-r from-primary to-accent text-white px-4 py-2 rounded-lg text-xs font-semibold">
               + Nouveau billet
             </Link>
@@ -51,18 +36,22 @@ export default function DashboardPage() {
           <KpiCard label="Ouverts" value={d.myOpenCount} trendType={d.myOpenCount > 0 ? 'warning' : 'neutral'} />
           <KpiCard label="En cours" value={d.myInProgressCount} />
           <KpiCard label="En attente" value={d.myPendingCount} />
-          <KpiCard label="Résolus / Fermés" value={d.myResolvedCount + d.myClosedCount} trend={d.medianResolutionHours > 0 ? `~${d.medianResolutionHours}h médiane` : undefined} trendType="up" />
+          <KpiCard label="Resolus / Fermes" value={d.myResolvedCount + d.myClosedCount} trend={d.medianResolutionHours > 0 ? `~${d.medianResolutionHours}h mediane` : undefined} trendType="up" />
         </div>
 
         <div className="grid grid-cols-3 gap-3 mb-5">
           <div className="col-span-2">
-            <VolumeChart data={d.volumeByWeek || []} />
+            <Suspense fallback={<div className="h-64 bg-lumen-bg-tertiary border border-lumen-border-primary rounded-xl animate-pulse" />}>
+              <VolumeChart data={d.volumeByWeek || []} />
+            </Suspense>
           </div>
-          <CategoryDonut data={d.byCategory || []} />
+          <Suspense fallback={<div className="h-64 bg-lumen-bg-tertiary border border-lumen-border-primary rounded-xl animate-pulse" />}>
+            <CategoryDonut data={d.byCategory || []} />
+          </Suspense>
         </div>
 
         <div className="bg-lumen-bg-tertiary border border-lumen-border-primary rounded-xl p-4">
-          <h3 className="text-sm font-semibold mb-3">Mes billets récents</h3>
+          <h3 className="text-sm font-semibold mb-3">Mes billets recents</h3>
           {d.myTickets?.length === 0 && (
             <p className="text-xs text-lumen-text-tertiary py-4 text-center">Aucun billet pour le moment</p>
           )}
@@ -92,27 +81,26 @@ export default function DashboardPage() {
     <div>
       <div className="flex items-center justify-between mb-5">
         <h1 className="text-lg font-bold">Tableau de bord</h1>
-        <button
-          onClick={handleRefresh}
-          className="flex items-center gap-1.5 bg-lumen-bg-tertiary border border-lumen-border-primary rounded-lg px-3 py-1.5 text-xs text-lumen-text-secondary hover:text-lumen-text-primary"
-        >
-          <RefreshCw size={14} />
-        </button>
+        <RefreshButton />
       </div>
 
       <div className="grid grid-cols-5 gap-3 mb-5">
-        <KpiCard label="Billets ouverts" value={d.kpis.openCount} trend={`${d.kpis.openTrend > 0 ? '↑' : '→'} ${d.kpis.openTrend}%`} trendType={d.kpis.openTrend > 10 ? 'down' : 'neutral'} />
+        <KpiCard label="Billets ouverts" value={d.kpis.openCount} trend={`${d.kpis.openTrend > 0 ? '\u2191' : '\u2192'} ${d.kpis.openTrend}%`} trendType={d.kpis.openTrend > 10 ? 'down' : 'neutral'} />
         <KpiCard label="En cours" value={d.kpis.inProgressCount} />
-        <KpiCard label="Résolus (mois)" value={d.kpis.resolvedMonthCount} trend={`${d.kpis.resolvedMonthTrend > 0 ? '↑' : '↓'} ${Math.abs(d.kpis.resolvedMonthTrend)}%`} trendType={d.kpis.resolvedMonthTrend >= 0 ? 'up' : 'down'} />
-        <KpiCard label="Temps médian résolution" value={`${d.kpis.medianResolutionHours}h`} trend={`${d.kpis.medianResolutionTrend > 0 ? '↑' : '↓'} ${Math.abs(d.kpis.medianResolutionTrend)}h`} trendType={d.kpis.medianResolutionTrend <= 0 ? 'up' : 'down'} />
-        <KpiCard label="Non assignés" value={d.kpis.unassignedCount} trendType={d.kpis.unassignedCount > 0 ? 'warning' : 'neutral'} trend={d.kpis.unassignedCount > 0 ? '⚠ nécessite attention' : '✓'} />
+        <KpiCard label="Resolus (mois)" value={d.kpis.resolvedMonthCount} trend={`${d.kpis.resolvedMonthTrend > 0 ? '\u2191' : '\u2193'} ${Math.abs(d.kpis.resolvedMonthTrend)}%`} trendType={d.kpis.resolvedMonthTrend >= 0 ? 'up' : 'down'} />
+        <KpiCard label="Temps median resolution" value={`${d.kpis.medianResolutionHours}h`} trend={`${d.kpis.medianResolutionTrend > 0 ? '\u2191' : '\u2193'} ${Math.abs(d.kpis.medianResolutionTrend)}h`} trendType={d.kpis.medianResolutionTrend <= 0 ? 'up' : 'down'} />
+        <KpiCard label="Non assignes" value={d.kpis.unassignedCount} trendType={d.kpis.unassignedCount > 0 ? 'warning' : 'neutral'} trend={d.kpis.unassignedCount > 0 ? '\u26a0 necessite attention' : '\u2713'} />
       </div>
 
       <div className="grid grid-cols-3 gap-3 mb-5">
         <div className="col-span-2">
-          <VolumeChart data={d.volumeByWeek} />
+          <Suspense fallback={<div className="h-64 bg-lumen-bg-tertiary border border-lumen-border-primary rounded-xl animate-pulse" />}>
+            <VolumeChart data={d.volumeByWeek} />
+          </Suspense>
         </div>
-        <CategoryDonut data={d.byCategory} />
+        <Suspense fallback={<div className="h-64 bg-lumen-bg-tertiary border border-lumen-border-primary rounded-xl animate-pulse" />}>
+          <CategoryDonut data={d.byCategory} />
+        </Suspense>
       </div>
 
       <div className="grid grid-cols-2 gap-3">

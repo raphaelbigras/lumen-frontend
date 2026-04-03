@@ -1,6 +1,11 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from 'next';
+
+const nextConfig: NextConfig = {
   output: 'standalone',
+  experimental: {
+    reactCompiler: true,
+    optimizePackageImports: ['recharts', 'lucide-react'],
+  },
   async redirects() {
     return [
       { source: '/tickets', destination: '/billets', permanent: true },
@@ -9,4 +14,5 @@ const nextConfig = {
     ];
   },
 };
-module.exports = nextConfig;
+
+export default nextConfig;
