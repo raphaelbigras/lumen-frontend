@@ -39,7 +39,7 @@ export function DepartmentsClient({ departments }: { departments: Department[] }
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center gap-4 mb-5">
         <h1 className="text-lg font-bold">Départements</h1>
         <button
           onClick={() => { setCreating(true); setNewName(''); }}

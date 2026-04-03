@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { CategoryTable } from './CategoryTable';
 import { DepartmentTable } from './DepartmentTable';
 import { Plus } from 'lucide-react';
@@ -12,21 +12,21 @@ interface CustomFieldsClientProps {
 }
 
 export function CustomFieldsClient({ categories, departments, initialTab }: CustomFieldsClientProps) {
-  const router = useRouter();
-  const tab = initialTab === 'departments' ? 'departments' : 'categories';
-  const [creating, setCreating] = useState(false);
+  const [tab, setTab] = useState(initialTab === 'departments' ? 'departments' : 'categories');
+  const [creatingCat, setCreatingCat] = useState(false);
+  const [creatingDep, setCreatingDep] = useState(false);
 
   const switchTab = (t: string) => {
-    setCreating(false);
-    router.push(`/categories?tab=${t}`);
+    setTab(t);
+    window.history.replaceState(null, '', `/categories?tab=${t}`);
   };
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center gap-4 mb-5">
         <h1 className="text-lg font-bold">Champs personnalisés</h1>
         <button
-          onClick={() => setCreating(true)}
+          onClick={() => tab === 'categories' ? setCreatingCat(true) : setCreatingDep(true)}
           className="flex items-center gap-1.5 bg-gradient-to-r from-primary to-accent text-white px-4 py-1.5 rounded-lg text-xs font-semibold"
         >
           <Plus size={14} /> {tab === 'categories' ? 'Nouvelle catégorie' : 'Nouveau département'}
@@ -49,10 +49,10 @@ export function CustomFieldsClient({ categories, departments, initialTab }: Cust
       </div>
 
       {tab === 'categories' && (
-        <CategoryTable categories={categories} creating={creating} onCreateDone={() => setCreating(false)} />
+        <CategoryTable categories={categories} creating={creatingCat} onCreateDone={() => setCreatingCat(false)} />
       )}
       {tab === 'departments' && (
-        <DepartmentTable departments={departments} creating={creating} onCreateDone={() => setCreating(false)} />
+        <DepartmentTable departments={departments} creating={creatingDep} onCreateDone={() => setCreatingDep(false)} />
       )}
     </div>
   );

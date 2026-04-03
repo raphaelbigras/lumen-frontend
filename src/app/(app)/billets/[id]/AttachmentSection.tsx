@@ -2,7 +2,7 @@
 import { useState, useTransition } from 'react';
 import { deleteAttachmentAction } from './actions';
 import { attachmentsApi } from '../../../../lib/api/attachments';
-import { Paperclip, Download, Trash2, Upload, FileText, Image, File } from 'lucide-react';
+import { Paperclip, Download, Trash2, Upload, FileText, Image, File, AlertTriangle } from 'lucide-react';
 
 interface Attachment {
   id: string;
@@ -35,6 +35,7 @@ export function AttachmentSection({ ticketId, attachments, canManage, userRole }
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; filename: string } | null>(null);
 
   const filtered = attachments.filter((a) => !a.deletedAt);
 
@@ -88,8 +89,8 @@ export function AttachmentSection({ ticketId, attachments, canManage, userRole }
                 </button>
                 {userRole === 'ADMIN' && (
                   <button
-                    onClick={() => confirm('Supprimer cette pièce jointe ?') && startTransition(() => deleteAttachmentAction(ticketId, att.id))}
-                    className="px-2 py-1.5 rounded-md text-lumen-text-tertiary hover:text-red-400 hover:bg-red-400/10 transition-colors shrink-0 opacity-0 group-hover:opacity-100 ml-1"
+                    onClick={() => setDeleteTarget({ id: att.id, filename: att.filename })}
+                    className="px-2 py-1.5 rounded-md text-lumen-text-tertiary hover:text-red-400 hover:bg-red-400/10 transition-colors shrink-0 ml-1"
                     title="Supprimer"
                   >
                     <Trash2 size={14} />
@@ -118,6 +119,45 @@ export function AttachmentSection({ ticketId, attachments, canManage, userRole }
         </p>
         <p className="text-[10px] text-lumen-text-tertiary mt-0.5">Max 10 Mo par fichier</p>
       </div>
+
+      {/* Delete confirmation modal */}
+      {deleteTarget && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" onClick={() => setDeleteTarget(null)} />
+          <div className="fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-lumen-bg-tertiary border border-lumen-border-primary rounded-xl shadow-2xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
+                <AlertTriangle size={20} className="text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-lumen-text-primary">Supprimer la pièce jointe</h3>
+                <p className="text-xs text-lumen-text-tertiary mt-0.5">Cette action est irréversible.</p>
+              </div>
+            </div>
+            <p className="text-xs text-lumen-text-secondary mb-5">
+              Voulez-vous vraiment supprimer <span className="font-medium text-lumen-text-primary">{deleteTarget.filename}</span> ?
+            </p>
+            <div className="flex items-center justify-end gap-2">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="px-4 py-2 rounded-lg text-xs font-medium text-lumen-text-secondary bg-lumen-bg-secondary border border-lumen-border-primary hover:text-lumen-text-primary transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => {
+                  const id = deleteTarget.id;
+                  setDeleteTarget(null);
+                  startTransition(() => deleteAttachmentAction(ticketId, id));
+                }}
+                className="px-4 py-2 rounded-lg text-xs font-medium text-white bg-red-500 hover:bg-red-600 transition-colors"
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

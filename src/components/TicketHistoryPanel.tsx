@@ -33,19 +33,24 @@ const EVENT_CONFIG: Record<string, { label: string; icon: any; color: string }> 
   ATTACHMENT_DELETED: { label: 'Pièce jointe supprimée', icon: Trash2, color: 'text-gray-400' },
 };
 
-function formatRelativeDate(dateStr: string): string {
+function formatEventDate(dateStr: string): string {
   const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMin = Math.floor(diffMs / 60000);
-  const diffH = Math.floor(diffMs / 3600000);
-  const diffD = Math.floor(diffMs / 86400000);
 
   if (diffMin < 1) return "à l'instant";
-  if (diffMin < 60) return `il y a ${diffMin}min`;
-  if (diffH < 24) return `il y a ${diffH}h`;
-  if (diffD < 7) return `il y a ${diffD}j`;
-  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+  if (diffMin < 60) return `il y a ${diffMin} min`;
+
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const eventDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+  if (eventDay.getTime() === today.getTime()) {
+    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) +
+    ' ' + date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
 function EventPayload({ event }: { event: TicketEvent }) {
@@ -201,7 +206,7 @@ export function TicketHistoryPanel({
                           {config.label}
                         </span>
                         <span className="text-[10px] text-lumen-text-tertiary whitespace-nowrap">
-                          {formatRelativeDate(event.createdAt)}
+                          {formatEventDate(event.createdAt)}
                         </span>
                       </div>
                       <EventPayload event={event} />

@@ -26,7 +26,8 @@ export async function serverFetch<T>(
     throw new Error(`API error: ${res.status} ${res.statusText}`);
   }
 
-  return res.json();
+  const text = await res.text();
+  return text ? JSON.parse(text) : undefined;
 }
 
 export async function serverPost<T>(
