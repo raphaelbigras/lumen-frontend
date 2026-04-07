@@ -9,8 +9,11 @@ import { StatusChanger } from './StatusChanger';
 import { AttachmentSection } from './AttachmentSection';
 import { CloseTicketButton, ReopenTicketButton } from './TicketOwnerModals';
 import { HistoryButton } from './HistoryButton';
+import { InlineFieldEditors } from './InlineFieldEditors';
 import { notFound } from 'next/navigation';
 import type { Ticket } from '../../../../lib/api/tickets';
+import type { Category } from '../../../../lib/api/categories';
+import type { Department } from '../../../../lib/api/departments';
 
 interface TicketDetailPageProps {
   params: Promise<{ id: string }>;
@@ -31,6 +34,15 @@ export default async function TicketDetailPage({ params }: TicketDetailPageProps
   }
 
   const canManage = userRole === 'ADMIN' || userRole === 'AGENT';
+
+  let categories: Category[] = [];
+  let departments: Department[] = [];
+  if (canManage) {
+    [categories, departments] = await Promise.all([
+      serverFetch<Category[]>('/categories').catch(() => []),
+      serverFetch<Department[]>('/departments').catch(() => []),
+    ]);
+  }
   const isSubmitter =
     userId === ticket.submitter?.keycloakId ||
     userId === ticket.submitter?.id ||
@@ -92,38 +104,62 @@ export default async function TicketDetailPage({ params }: TicketDetailPageProps
         <div className="space-y-4">
           <div className="bg-lumen-bg-tertiary border border-lumen-border-primary rounded-xl p-4">
             <h3 className="text-[11px] font-semibold text-lumen-text-tertiary uppercase tracking-wider mb-3">Details</h3>
-            <dl className="space-y-3 text-xs">
-              <div>
-                <dt className="text-lumen-text-tertiary">Priorité</dt>
-                <dd className="font-medium text-lumen-text-primary flex items-center gap-1.5 mt-0.5">
-                  <span className={`inline-block w-2 h-2 rounded-full ${PRIORITY_COLORS[ticket.priority]}`} />
-                  {PRIORITY_LABELS[ticket.priority] || ticket.priority}
-                </dd>
-              </div>
-              {ticket.category && (
-                <div>
-                  <dt className="text-lumen-text-tertiary">Catégorie</dt>
-                  <dd className="font-medium text-lumen-text-primary mt-0.5">{ticket.category.name}</dd>
+            {canManage ? (
+              <div className="space-y-3 text-xs">
+                <InlineFieldEditors
+                  ticketId={id}
+                  currentPriority={ticket.priority}
+                  currentCategoryId={ticket.category?.id}
+                  currentDepartmentId={ticket.department?.id}
+                  categories={categories}
+                  departments={departments}
+                />
+                <div className="pt-2 mt-2 border-t border-lumen-border-secondary">
+                  <dt className="text-lumen-text-tertiary">Soumis par</dt>
+                  <dd className="font-medium text-lumen-text-primary mt-0.5">{ticket.submitter.firstName} {ticket.submitter.lastName}</dd>
                 </div>
-              )}
-              <div>
-                <dt className="text-lumen-text-tertiary">Soumis par</dt>
-                <dd className="font-medium text-lumen-text-primary mt-0.5">{ticket.submitter.firstName} {ticket.submitter.lastName}</dd>
-              </div>
-              {ticket.department && (
                 <div>
-                  <dt className="text-lumen-text-tertiary">Département</dt>
-                  <dd className="font-medium text-lumen-text-primary mt-0.5">{ticket.department.name}</dd>
+                  <dt className="text-lumen-text-tertiary">Créé le</dt>
+                  <dd className="font-medium text-lumen-text-primary mt-0.5">{new Date(ticket.createdAt).toLocaleDateString('fr-FR')}</dd>
                 </div>
-              )}
-              <div>
-                <dt className="text-lumen-text-tertiary">Créé le</dt>
-                <dd className="font-medium text-lumen-text-primary mt-0.5">{new Date(ticket.createdAt).toLocaleDateString('fr-FR')}</dd>
+                <div className="pt-2 mt-2 border-t border-lumen-border-secondary">
+                  <HistoryButton ticketId={id} />
+                </div>
               </div>
-              <div className="pt-2 mt-2 border-t border-lumen-border-secondary">
-                <HistoryButton ticketId={id} />
-              </div>
-            </dl>
+            ) : (
+              <dl className="space-y-3 text-xs">
+                <div>
+                  <dt className="text-lumen-text-tertiary">Priorité</dt>
+                  <dd className="font-medium text-lumen-text-primary flex items-center gap-1.5 mt-0.5">
+                    <span className={`inline-block w-2 h-2 rounded-full ${PRIORITY_COLORS[ticket.priority]}`} />
+                    {PRIORITY_LABELS[ticket.priority] || ticket.priority}
+                  </dd>
+                </div>
+                {ticket.category && (
+                  <div>
+                    <dt className="text-lumen-text-tertiary">Catégorie</dt>
+                    <dd className="font-medium text-lumen-text-primary mt-0.5">{ticket.category.name}</dd>
+                  </div>
+                )}
+                <div>
+                  <dt className="text-lumen-text-tertiary">Soumis par</dt>
+                  <dd className="font-medium text-lumen-text-primary mt-0.5">{ticket.submitter.firstName} {ticket.submitter.lastName}</dd>
+                </div>
+                {ticket.department && (
+                  <div>
+                    <dt className="text-lumen-text-tertiary">Département</dt>
+                    <dd className="font-medium text-lumen-text-primary mt-0.5">{ticket.department.name}</dd>
+                  </div>
+                )}
+                <div>
+                  <dt className="text-lumen-text-tertiary">Créé le</dt>
+                  <dd className="font-medium text-lumen-text-primary mt-0.5">{new Date(ticket.createdAt).toLocaleDateString('fr-FR')}</dd>
+                </div>
+                <div className="pt-2 mt-2 border-t border-lumen-border-secondary">
+                  <HistoryButton ticketId={id} />
+                </div>
+              </dl>
+            )}
           </div>
 
           {(canManage || canClose || canReopen) && (
