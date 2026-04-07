@@ -8,6 +8,11 @@ export async function updateTicketAction(ticketId: string, data: Record<string, 
   revalidatePath(`/billets/${ticketId}`);
 }
 
+export async function assignTicketAction(ticketId: string, agentId: string) {
+  await serverPost(`/tickets/${ticketId}/assign`, { agentId });
+  revalidatePath(`/billets/${ticketId}`);
+}
+
 export async function addCommentAction(ticketId: string, body: string) {
   await serverPost(`/tickets/${ticketId}/comments`, { body });
   revalidatePath(`/billets/${ticketId}`);

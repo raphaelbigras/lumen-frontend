@@ -10,6 +10,7 @@ import { AttachmentSection } from './AttachmentSection';
 import { CloseTicketButton, ReopenTicketButton } from './TicketOwnerModals';
 import { HistoryButton } from './HistoryButton';
 import { InlineFieldEditors } from './InlineFieldEditors';
+import { AssigneeChanger, type AssignableUser } from './AssigneeChanger';
 import { notFound } from 'next/navigation';
 import type { Ticket } from '../../../../lib/api/tickets';
 import type { Category } from '../../../../lib/api/categories';
@@ -37,12 +38,29 @@ export default async function TicketDetailPage({ params }: TicketDetailPageProps
 
   let categories: Category[] = [];
   let departments: Department[] = [];
+  let assignableUsers: AssignableUser[] = [];
   if (canManage) {
-    [categories, departments] = await Promise.all([
+    const [cats, depts, allUsers] = await Promise.all([
       serverFetch<Category[]>('/categories').catch(() => []),
       serverFetch<Department[]>('/departments').catch(() => []),
+      serverFetch<AssignableUser[]>('/users').catch(() => []),
     ]);
+    categories = cats;
+    departments = depts;
+    assignableUsers = allUsers
+      .filter((u) => u.role === 'ADMIN' || u.role === 'AGENT')
+      .sort((a, b) =>
+        `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`, 'fr'),
+      );
   }
+
+  const currentAssignee = ticket.assignments?.[0]?.agent
+    ? {
+        id: ticket.assignments[0].agent.id,
+        firstName: ticket.assignments[0].agent.firstName,
+        lastName: ticket.assignments[0].agent.lastName,
+      }
+    : null;
   const isSubmitter =
     userId === ticket.submitter?.keycloakId ||
     userId === ticket.submitter?.id ||
@@ -103,7 +121,7 @@ export default async function TicketDetailPage({ params }: TicketDetailPageProps
         {/* Sidebar */}
         <div className="space-y-4">
           <div className="bg-lumen-bg-tertiary border border-lumen-border-primary rounded-xl p-4">
-            <h3 className="text-[11px] font-semibold text-lumen-text-tertiary uppercase tracking-wider mb-3">Details</h3>
+            <h3 className="text-[11px] font-semibold text-lumen-text-tertiary uppercase tracking-wider mb-3">Détails</h3>
             {canManage ? (
               <div className="space-y-3 text-xs">
                 <InlineFieldEditors
@@ -117,6 +135,14 @@ export default async function TicketDetailPage({ params }: TicketDetailPageProps
                 <div className="pt-2 mt-2 border-t border-lumen-border-secondary">
                   <dt className="text-lumen-text-tertiary">Soumis par</dt>
                   <dd className="font-medium text-lumen-text-primary mt-0.5">{ticket.submitter.firstName} {ticket.submitter.lastName}</dd>
+                </div>
+                <div>
+                  <dt className="text-lumen-text-tertiary mb-1">Assigné à</dt>
+                  <AssigneeChanger
+                    ticketId={id}
+                    currentAssignee={currentAssignee}
+                    users={assignableUsers}
+                  />
                 </div>
                 <div>
                   <dt className="text-lumen-text-tertiary">Créé le</dt>
@@ -144,6 +170,20 @@ export default async function TicketDetailPage({ params }: TicketDetailPageProps
                 <div>
                   <dt className="text-lumen-text-tertiary">Soumis par</dt>
                   <dd className="font-medium text-lumen-text-primary mt-0.5">{ticket.submitter.firstName} {ticket.submitter.lastName}</dd>
+                </div>
+                <div>
+                  <dt className="text-lumen-text-tertiary">Assigné à</dt>
+                  <dd
+                    className={`mt-0.5 ${
+                      currentAssignee
+                        ? 'font-medium text-lumen-text-primary'
+                        : 'italic text-lumen-text-tertiary'
+                    }`}
+                  >
+                    {currentAssignee
+                      ? `${currentAssignee.firstName} ${currentAssignee.lastName}`
+                      : 'Non assigné'}
+                  </dd>
                 </div>
                 {ticket.department && (
                   <div>
