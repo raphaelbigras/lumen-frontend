@@ -8,6 +8,7 @@ import {
   ArrowRightLeft,
   Gauge,
   Tag,
+  Building2,
   Pencil,
   FileText,
   UserPlus,
@@ -23,6 +24,7 @@ const EVENT_CONFIG: Record<string, { label: string; icon: any; color: string }> 
   STATUS_CHANGED: { label: 'Statut modifié', icon: ArrowRightLeft, color: 'text-purple-400' },
   PRIORITY_CHANGED: { label: 'Priorité modifiée', icon: Gauge, color: 'text-orange-400' },
   CATEGORY_CHANGED: { label: 'Catégorie modifiée', icon: Tag, color: 'text-teal-400' },
+  DEPARTMENT_CHANGED: { label: 'Département modifié', icon: Building2, color: 'text-sky-400' },
   TITLE_CHANGED: { label: 'Titre modifié', icon: Pencil, color: 'text-yellow-400' },
   DESCRIPTION_CHANGED: { label: 'Description modifiée', icon: FileText, color: 'text-yellow-400' },
   ASSIGNED: { label: 'Agent assigné', icon: UserPlus, color: 'text-green-400' },
@@ -88,6 +90,14 @@ function EventPayload({ event }: { event: TicketEvent }) {
     return (
       <p className="text-xs text-lumen-text-secondary mt-1">
         {payload.fromName} → nouvelle catégorie
+      </p>
+    );
+  }
+
+  if (type === 'DEPARTMENT_CHANGED' && payload.fromName) {
+    return (
+      <p className="text-xs text-lumen-text-secondary mt-1">
+        {payload.fromName} → nouveau département
       </p>
     );
   }
