@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { ColumnVisibilityPopover } from '../../../components/TicketTable/ColumnVisibilityPopover';
 import { RefreshCw, Download } from 'lucide-react';
 import { STATUS_LABELS, PRIORITY_LABELS } from '../../../lib/translations';
@@ -26,6 +26,13 @@ const TicketTable = dynamic(
 
 const DEFAULT_COLUMNS = ['numero', 'title', 'status', 'priority', 'category', 'submitter', 'assignee', 'department', 'site', 'created', 'updated'];
 const PAGE_SIZE_OPTIONS = [25, 50, 75, 100];
+const STATUS_TOGGLE_COLORS: Record<string, string> = {
+  OPEN: 'bg-status-open-bg text-status-open-text border-status-open-text/30',
+  IN_PROGRESS: 'bg-status-progress-bg text-status-progress-text border-status-progress-text/30',
+  PENDING: 'bg-status-pending-bg text-status-pending-text border-status-pending-text/30',
+  RESOLVED: 'bg-status-resolved-bg text-status-resolved-text border-status-resolved-text/30',
+  CLOSED: 'bg-status-closed-bg text-status-closed-text border-status-closed-text/30',
+};
 
 interface TicketListClientProps {
   initialData: PaginatedTickets;
@@ -47,7 +54,6 @@ export function TicketListClient({
   currentStatus,
 }: TicketListClientProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [search, setSearch] = useState(currentSearch);
   const [exporting, setExporting] = useState(false);
 
@@ -80,6 +86,29 @@ export function TicketListClient({
   useEffect(() => {
     localStorage.setItem('lumen-visible-columns', JSON.stringify(visibleColumns));
   }, [visibleColumns]);
+  useEffect(() => {
+    setSearch(currentSearch);
+  }, [currentSearch]);
+
+  useEffect(() => {
+    const normalizedSearch = search.trim();
+    const normalizedCurrentSearch = currentSearch.trim();
+
+    if (normalizedSearch === normalizedCurrentSearch) return;
+
+    const timeoutId = window.setTimeout(() => {
+      const params = new URLSearchParams();
+      params.set('page', '1');
+      params.set('limit', String(currentLimit));
+      params.set('sortBy', currentSortBy);
+      params.set('sortOrder', currentSortOrder);
+      if (normalizedSearch) params.set('search', normalizedSearch);
+      if (currentStatus) params.set('status', currentStatus);
+      router.replace(`/billets?${params.toString()}`);
+    }, 250);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [search, currentSearch, currentLimit, currentSortBy, currentSortOrder, currentStatus, router]);
 
   // Navigate with URL search params
   function navigate(overrides: Record<string, string | undefined>) {
@@ -99,6 +128,22 @@ export function TicketListClient({
     router.push(`/billets?${p.toString()}`);
   }
 
+  function getStatusHref(nextStatus?: string) {
+    const p = new URLSearchParams();
+    const values: Record<string, string> = {
+      page: '1',
+      limit: String(currentLimit),
+      sortBy: currentSortBy,
+      sortOrder: currentSortOrder,
+      ...(currentSearch ? { search: currentSearch } : {}),
+      ...(nextStatus ? { status: nextStatus } : {}),
+    };
+    for (const [k, v] of Object.entries(values)) {
+      if (v) p.set(k, v);
+    }
+    return `/billets?${p.toString()}`;
+  }
+
   const handleSort = (column: string) => {
     const sortMap: Record<string, string> = { numero: 'ticketNumber', title: 'title', status: 'status', priority: 'priority', category: 'category', submitter: 'submitter', assignee: 'assignee', department: 'department', site: 'site', created: 'createdAt', updated: 'updatedAt' };
     const field = sortMap[column];
@@ -111,7 +156,7 @@ export function TicketListClient({
   };
 
   const handleSearchSubmit = () => {
-    navigate({ search: search || undefined, page: '1' });
+    navigate({ search: search.trim() || undefined, page: '1' });
   };
 
   const toggleColumn = (id: string) => {
@@ -176,8 +221,9 @@ export function TicketListClient({
   ];
 
   return (
-    <>
+    <div className="space-y-2">
       {/* Toolbar row — search + actions */}
+      <div className="flex flex-wrap items-center gap-2">
       <input
         type="text"
         placeholder="Rechercher..."
@@ -196,10 +242,37 @@ export function TicketListClient({
       <Link href="/billets/nouveau" className="bg-gradient-to-r from-primary to-accent text-white px-5 py-2 rounded-lg text-xs font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:brightness-110 transition-all">
         + Nouveau billet
       </Link>
+      </div>
+
+      <div className="hidden">
+        <Link
+          href={getStatusHref()}
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+            !currentStatus
+              ? 'bg-primary/10 text-primary border-primary/30'
+              : 'bg-lumen-bg-tertiary text-lumen-text-tertiary border-lumen-border-primary hover:text-lumen-text-secondary'
+          }`}
+        >
+          Tous
+        </Link>
+        {Object.entries(STATUS_LABELS).map(([key, label]) => (
+          <Link
+            key={key}
+            href={getStatusHref(currentStatus === key ? undefined : key)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+              currentStatus === key
+                ? STATUS_TOGGLE_COLORS[key]
+                : 'bg-lumen-bg-tertiary text-lumen-text-tertiary border-lumen-border-primary hover:text-lumen-text-secondary'
+            }`}
+          >
+            {label}
+          </Link>
+        ))}
+      </div>
 
       {/* Export + pagination — full width below */}
-      <div className="w-full mt-2">
-        <div className="flex items-center justify-between mb-2">
+      <div className="w-full">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <button
             onClick={handleExportCsv}
             disabled={exporting || !initialData.total}
@@ -238,6 +311,32 @@ export function TicketListClient({
           </div>
         </div>
 
+        <div className="mt-2 mb-2 flex flex-wrap items-center gap-1.5">
+          <Link
+            href={getStatusHref()}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+              !currentStatus
+                ? 'bg-primary/10 text-primary border-primary/30'
+                : 'bg-lumen-bg-tertiary text-lumen-text-tertiary border-lumen-border-primary hover:text-lumen-text-secondary'
+            }`}
+          >
+            Tous
+          </Link>
+          {Object.entries(STATUS_LABELS).map(([key, label]) => (
+            <Link
+              key={key}
+              href={getStatusHref(currentStatus === key ? undefined : key)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                currentStatus === key
+                  ? STATUS_TOGGLE_COLORS[key]
+                  : 'bg-lumen-bg-tertiary text-lumen-text-tertiary border-lumen-border-primary hover:text-lumen-text-secondary'
+              }`}
+            >
+              {label}
+            </Link>
+          ))}
+        </div>
+
         <TicketTable
           tickets={initialData.data || []}
           columnOrder={columnOrder}
@@ -253,6 +352,6 @@ export function TicketListClient({
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }

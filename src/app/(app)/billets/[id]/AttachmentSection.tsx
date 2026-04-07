@@ -62,7 +62,7 @@ export function AttachmentSection({ ticketId, attachments, canManage, userRole }
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-semibold text-lumen-text-primary flex items-center gap-2">
           <Paperclip size={16} className="text-lumen-text-tertiary" />
-          Pieces jointes
+          Pi&egrave;ces jointes
           {filtered.length > 0 && (
             <span className="text-[10px] bg-lumen-bg-secondary border border-lumen-border-primary rounded-full px-2 py-0.5 text-lumen-text-tertiary font-normal">
               {filtered.length}

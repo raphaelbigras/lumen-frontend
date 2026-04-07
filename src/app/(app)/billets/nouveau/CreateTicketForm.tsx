@@ -11,7 +11,7 @@ import { mapZodErrors } from '../../../../lib/schemas/utils';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-const SITES = ['Valleyfield', 'Beauharnois', 'Montreal', 'Brossard', 'Bromont', 'Hemmingford'];
+const SITES = ['Valleyfield', 'Beauharnois', 'Montréal', 'Brossard', 'Bromont', 'Hemmingford'];
 
 function formatFileSize(bytes: number) {
   if (bytes < 1024) return `${bytes} o`;

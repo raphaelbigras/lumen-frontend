@@ -4,6 +4,7 @@ import Keycloak from 'next-auth/providers/keycloak';
 declare module 'next-auth' {
   interface Session {
     accessToken?: string;
+    idToken?: string;
     error?: 'RefreshTokenError';
     user: {
       id: string;
@@ -17,6 +18,7 @@ declare module 'next-auth' {
 declare module '@auth/core/jwt' {
   interface JWT {
     access_token: string;
+    id_token?: string;
     expires_at: number;
     refresh_token?: string;
     role: 'ADMIN' | 'AGENT' | 'USER';
@@ -42,6 +44,11 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       clientId: process.env.AUTH_KEYCLOAK_ID!,
       clientSecret: process.env.AUTH_KEYCLOAK_SECRET!,
       issuer: `${process.env.AUTH_KEYCLOAK_ISSUER}`,
+      authorization: {
+        params: {
+          prompt: 'login',
+        },
+      },
     }),
   ],
   session: { strategy: 'jwt' },
@@ -50,8 +57,10 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       // First-time login — persist tokens and role
       if (account) {
         token.access_token = account.access_token!;
+        token.id_token = account.id_token;
         token.expires_at = account.expires_at!;
         token.refresh_token = account.refresh_token;
+        token.error = undefined;
       }
 
       // Always extract role from current access token
@@ -59,6 +68,10 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
       // Token still valid
       if (Date.now() < token.expires_at * 1000) {
+        return token;
+      }
+
+      if (token.error === 'RefreshTokenError') {
         return token;
       }
 
@@ -95,13 +108,17 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         };
       } catch (error) {
         console.error('Error refreshing access token', error);
-        token.error = 'RefreshTokenError';
-        return token;
+        return {
+          ...token,
+          error: 'RefreshTokenError',
+          refresh_token: undefined,
+        };
       }
     },
 
     async session({ session, token }) {
       session.accessToken = token.access_token;
+      session.idToken = token.id_token;
       session.error = token.error;
       session.user.id = token.sub!;
       session.user.role = token.role;

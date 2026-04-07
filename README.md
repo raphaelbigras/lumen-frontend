@@ -42,6 +42,12 @@ Open [http://localhost:3000](http://localhost:3000). You will be redirected to K
 | `NEXT_PUBLIC_KEYCLOAK_URL` | Keycloak server URL | `http://localhost:8080` |
 | `NEXT_PUBLIC_KEYCLOAK_REALM` | Keycloak realm name | `lumen` |
 | `NEXT_PUBLIC_KEYCLOAK_CLIENT_ID` | Keycloak client ID | `lumen-frontend` |
+| `AUTH_SECRET` | Secret used by Auth.js to sign/encrypt session data | Generated value |
+| `AUTH_URL` | Public frontend URL used by Auth.js callbacks and session endpoints | `http://localhost:3000` |
+| `AUTH_TRUST_HOST` | Explicitly trusts the incoming host header; needed for local production runs and Docker | `true` |
+| `AUTH_KEYCLOAK_ID` | Keycloak confidential client ID used by Auth.js | `lumen-frontend` |
+| `AUTH_KEYCLOAK_SECRET` | Keycloak confidential client secret used by Auth.js | Keycloak client secret |
+| `AUTH_KEYCLOAK_ISSUER` | Keycloak realm issuer URL used by Auth.js | `http://localhost:8080/realms/lumen` |
 
 ## Commands
 
@@ -198,3 +204,5 @@ The app uses a multi-stage Dockerfile with `output: 'standalone'` (set in `next.
 docker build -t lumen-frontend .
 docker run -p 3000:3000 --env-file .env.local lumen-frontend
 ```
+
+For `npm run start` or Docker, make sure `AUTH_URL` matches the frontend URL you open in the browser and keep `AUTH_TRUST_HOST=true` for local/self-hosted runs.

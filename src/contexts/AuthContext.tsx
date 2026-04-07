@@ -1,6 +1,7 @@
 'use client';
-import { createContext, useContext, ReactNode } from 'react';
-import { useSession, signOut } from 'next-auth/react';
+import { createContext, useContext, ReactNode, useEffect, useRef } from 'react';
+import { useSession } from 'next-auth/react';
+import { logoutFromKeycloak } from '@/lib/auth-client';
 
 interface AuthContextValue {
   initialized: boolean;
@@ -16,6 +17,7 @@ const AuthContext = createContext<AuthContextValue>({
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();
+  const hasRedirectedForRefreshError = useRef(false);
 
   const initialized = status !== 'loading';
   const user = session?.user
@@ -27,8 +29,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     : null;
 
+  useEffect(() => {
+    if (session?.error !== 'RefreshTokenError') {
+      hasRedirectedForRefreshError.current = false;
+      return;
+    }
+
+    if (hasRedirectedForRefreshError.current) {
+      return;
+    }
+
+    hasRedirectedForRefreshError.current = true;
+    const callbackUrl = `${window.location.pathname}${window.location.search}`;
+    window.location.assign(
+      `/api/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`,
+    );
+  }, [session?.error]);
+
   return (
-    <AuthContext.Provider value={{ initialized, user, logout: () => signOut() }}>
+    <AuthContext.Provider
+      value={{ initialized, user, logout: () => logoutFromKeycloak(session?.idToken) }}
+    >
       {children}
     </AuthContext.Provider>
   );

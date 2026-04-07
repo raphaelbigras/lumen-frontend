@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { CommentForm } from './CommentForm';
 import { StatusChanger } from './StatusChanger';
 import { AttachmentSection } from './AttachmentSection';
-import { CloseTicketButton, ReopenTicketButton } from './TicketModals';
+import { CloseTicketButton, ReopenTicketButton } from './TicketOwnerModals';
 import { HistoryButton } from './HistoryButton';
 import { notFound } from 'next/navigation';
 import type { Ticket } from '../../../../lib/api/tickets';
@@ -21,6 +21,7 @@ export default async function TicketDetailPage({ params }: TicketDetailPageProps
   const session = await auth();
   const userRole = session?.user?.role || 'USER';
   const userId = session?.user?.id;
+  const userEmail = session?.user?.email;
 
   let ticket: any;
   try {
@@ -30,7 +31,10 @@ export default async function TicketDetailPage({ params }: TicketDetailPageProps
   }
 
   const canManage = userRole === 'ADMIN' || userRole === 'AGENT';
-  const isSubmitter = userId === ticket.submitter?.keycloakId;
+  const isSubmitter =
+    userId === ticket.submitter?.keycloakId ||
+    userId === ticket.submitter?.id ||
+    userEmail === ticket.submitter?.email;
   const canClose = isSubmitter && !['CLOSED', 'RESOLVED'].includes(ticket.status);
   const canReopen = isSubmitter && ['CLOSED', 'RESOLVED'].includes(ticket.status);
   const attachments = ticket.attachments?.filter((a: any) => !a.deletedAt) || [];
