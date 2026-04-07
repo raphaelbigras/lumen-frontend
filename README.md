@@ -139,7 +139,9 @@ src/
 - Full ticket view with description, metadata (priority, status, category, department, site, submitter, assignee)
 - **Comments**: add/delete comments
 - **Attachments**: upload, download (presigned URLs), delete
-- **Status changes**: agents/admins can change status via custom dropdown
+- **Status changes**: agents/admins can change status via custom dropdown (with confirmation modal)
+- **Inline field editors**: agents/admins can change **priority**, **catégorie**, and **département** directly from dropdowns in the sidebar — every change goes through a confirmation modal and emits the matching audit event (`PRIORITY_CHANGED`, `CATEGORY_CHANGED`, `DEPARTMENT_CHANGED`)
+- **Assignee dropdown**: searchable list of ADMIN/AGENT users between *Soumis par* and *Créé le*. First assignment submits immediately; reassignment requires confirmation. Regular users see a read-only "Assigné à" label (or *Non assigné*).
 - **Reopen**: submitters can reopen their own CLOSED/RESOLVED tickets with a mandatory reason message (posted as comment: "Billet réouvert par le demandeur : ___")
 - **Close**: submitters can close with a "solution found" message
 - **History panel**: lazy-loaded audit log showing all events (status changes, assignments, title edits, etc.)
