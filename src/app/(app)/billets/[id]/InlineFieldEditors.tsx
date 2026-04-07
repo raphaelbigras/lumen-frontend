@@ -2,7 +2,7 @@
 import { useState, useTransition } from 'react';
 import { updateTicketAction } from './actions';
 import { CustomSelect } from '../../../../components/CustomSelect';
-import { PRIORITY_LABELS, PRIORITY_COLORS } from '../../../../lib/translations';
+import { PRIORITY_LABELS } from '../../../../lib/translations';
 import { Gauge, Tag, Building2 } from 'lucide-react';
 
 const PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
@@ -89,10 +89,6 @@ export function InlineFieldEditors({
             }))}
             placeholder=""
           />
-          <div className="mt-1 flex items-center gap-1.5 text-[11px] text-lumen-text-tertiary">
-            <span className={`inline-block w-2 h-2 rounded-full ${PRIORITY_COLORS[priority]}`} />
-            {PRIORITY_LABELS[priority] || priority}
-          </div>
         </div>
 
         <div>
