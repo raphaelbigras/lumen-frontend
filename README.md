@@ -196,7 +196,10 @@ const { data: tickets } = useQuery({
 - **Lazy loading**: `VolumeChart`, `CategoryDonut`, and `TicketHistoryPanel` loaded via `next/dynamic` with `ssr: false` — saves ~1500 module compilations on initial dev load
 - **SQL aggregations**: analytics dashboard uses optimized `GROUP BY` and `date_trunc` queries (single SQL instead of 6+ individual counts)
 - **Connection pool**: backend Prisma pool sized at 10 to handle parallel analytics queries
-- **Selective fetching**: ticket list uses `select` (not `include`) to avoid loading full relations
+- **Selective fetching**: ticket list uses `select` (not `include`) to avoid loading full relations; ticket mutations (`PATCH`, assign, delete) use a light read variant that skips comments, events, and attachments
+- **Search index**: `pg_trgm` GIN index on `tickets.title` so the title search does not sequentially scan the table
+- **Indexed hot paths**: composite indexes on `ticket_comments(ticketId, deletedAt)`, `ticket_events(ticketId, createdAt)`, `attachments(ticketId, deletedAt)`, `ticket_assignments(ticketId, assignedAt)` and `tickets(deletedAt, createdAt)` cover the queries driving the detail view and default list
+- **Atomic assignment**: agent (re)assignment is wrapped in a single `prisma.$transaction` so the audit log stays consistent with the assignments table
 
 ## Docker
 
