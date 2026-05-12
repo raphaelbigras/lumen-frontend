@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
-import { Orbitron } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 import { Providers } from './providers';
 
-const orbitron = Orbitron({
-  subsets: ['latin'],
-  weight: ['700', '900'],
+const orbitron = localFont({
+  src: [
+    { path: './fonts/Orbitron-Bold.ttf', weight: '700', style: 'normal' },
+    { path: './fonts/Orbitron-Black.ttf', weight: '900', style: 'normal' },
+  ],
   display: 'swap',
   variable: '--font-orbitron',
 });
